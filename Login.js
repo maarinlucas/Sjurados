@@ -1,6 +1,14 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ImageBackground, Dimensions, TouchableOpacity, Image, TextInput, ActivityIndicator } from "react-native";
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import { useState, useEffect } from "react";
+import { auth, db } from "./firebase/index";
+import { getDatabase, ref, set, update, get } from 'firebase/database';
+import DeviceInfo from 'react-native-device-info';
+import { FirebaseError } from "firebase/app";
+import { signInWithEmailAndPassword, onAuthStateChanged} from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { format } from 'date-fns'; // Importando a função de formatação
+import { ptBR } from 'date-fns/locale';
+
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, TextInput, ActivityIndicator, Alert } from "react-native";
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
@@ -11,8 +19,11 @@ export default function Home() {
     const [isFocused, setIsFocused] = useState(false);
     const [clicked, setClicked] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
+   
     const [isPasswordVisible, setIsPasswordVisible] = useState(false); // Controla a visibilidade do texto
+    const [user2, setUser] = useState(null);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     // Função para alternar o estado de 'clicado'
     const handlePress = () => {
@@ -26,18 +37,171 @@ export default function Home() {
         'BlowBrush': require('./assets/fonts/blowbrush.otf'),
     });
 
+    /*  const logar = async () => {
+         setIsLoading(true);
+         // Simula uma operação assíncrona antes de navegar
+         await new Promise((resolve) => setTimeout(resolve, 1000));
+         setIsLoading(false);
+         navigation.navigate("Home");
+     } */
+
+    useEffect(() => {
+        const loadCredentials = async () => {
+            try {
+                // Recupera email e senha armazenados no AsyncStorage
+                const savedEmail = await AsyncStorage.getItem("email");
+                const savedPassword = await AsyncStorage.getItem("password");
+
+                if (savedEmail) setEmail(savedEmail); // Seta o email no estado
+                if (savedPassword) setPassword(savedPassword); // Seta a senha no estado
+
+
+            } catch (error) {
+                console.error("Erro ao carregar credenciais: ", error);
+            }
+        };
+
+
+  
+        loadCredentials();
+
+
+    }, []);
+
+
+   /*  useEffect(() => {
+        // Monitorando o estado de autenticação
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                // O usuário está autenticado
+                setUser(currentUser);
+                navigation.navigate('Home'); // Redireciona para Home caso já esteja logado
+            } else {
+                // Usuário não autenticado
+                setUser(null);
+            }
+        });
+
+        // Limpar a assinatura quando o componente for desmontado
+        return () => unsubscribe();
+    }, [navigation]); */
+
+    
     const logar = async () => {
         setIsLoading(true);
-        // Simula uma operação assíncrona antes de navegar
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setIsLoading(false);
-        navigation.navigate("Home");
+        try {       
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const deviceId = await DeviceInfo.getUniqueId();
+            const loginTime = format(new Date(), "dd/MM/yyyy HH:mm:ss", { locale: ptBR });
+
+            if (user.emailVerified) {
+                // Armazena email e senha no AsyncStorage              
+                const userRef = ref(db, "cadastroS/" + user.uid);
+                /* await AsyncStorage.setItem("email", email);
+                await AsyncStorage.setItem("password", password); */
+
+                // Obtem o número único do dispositivo
+                /*   const deviceId = await DeviceInfo.getUniqueId();
+                  const loginTime = format(new Date(), "dd/MM/yyyy HH:mm:ss", { locale: ptBR });
+   */
+                // Armazenando dados no Realtime Database
+
+                // Caminho onde os dados serão armazenados
+
+                const snapshot = await get(userRef);
+
+                /* const logRef = ref(db, `logins/${user.uid}-${deviceId}`); 
+                await set(logRef, {
+                    email: email,
+                    deviceId: deviceId,
+                    loginTime: loginTime,
+                }); */
+                if (snapshot.exists()) {
+                    const nome = snapshot.val().nome; // Obtenha o campo 'nome'
+
+                    if (nome) {
+                        // Agora crie a referência usando 'nome'
+                        const logRef = ref(db, `logins/${user.uid}-${nome}`);
+
+                        // Defina os dados no caminho novo
+                        await set(logRef, {
+                            email: email,
+                            deviceId: deviceId,
+                            loginTime: loginTime,
+                        });
+
+                        console.log("Dados salvos com sucesso no caminho:", `logins/${user.uid}-${nome}`);
+                    } else {
+                        console.log("O campo 'nome' não existe para este usuário.");
+                    }
+                } else {
+                    console.log("Nenhum dado encontrado para o usuário:", user.uid);
+                }
+
+                // Referência ao caminho no Realtime Database (por exemplo, "cadastroS/emailDoUsuario")
+
+
+                // Atualizando o campo específico (por exemplo, "nome" ou "senha")
+                await update(userRef, {
+                    senha: password, // Substitui o valor da senha
+                });
+
+
+
+                navigation.navigate("Home");
+                setIsLoading(false);
+            } else {
+                // Se o e-mail não estiver verificado, desloga o usuário
+                await auth.signOut();
+                setIsLoading(false);
+                Alert.alert("Por favor, verifique seu e-mail antes de fazer login.");
+            }
+
+
+        } catch (error) {
+            setIsLoading(false);
+            if (error instanceof FirebaseError) {
+                let errorMessage;
+
+                switch (error.code) {
+                    case "auth/invalid-credential":
+                        errorMessage = "A senha e/ou email inseridos não são válidos.";
+                        break;
+                    case "auth/invalid-email":
+                        errorMessage = "O e-mail inserido não é válido.";
+                        break;
+                    case "auth/user-disabled":
+                        errorMessage = "Esta conta foi desativada. Entre em contato com o suporte.";
+                        break;
+                    case "auth/user-not-found":
+                        errorMessage = "Nenhuma conta encontrada com este e-mail.";
+                        break;
+                    case "auth/network-request-failed":
+                        errorMessage = "Não foi possível conectar ao servidor. Verifique sua conexão com a internet.";
+                        break;
+                    case "auth/too-many-requests":
+                        errorMessage = "O acesso a esta conta foi temporariamente desativado devido a muitas tentativas de login malsucedidas. Você pode restaurá-lo imediatamente redefinindo sua senha ou tentar novamente mais tarde.";
+                        break;
+                    default:
+                        errorMessage = `Erro inesperado: ${error.message}`;
+                        break;
+                }
+
+                Alert.alert("Erro ao realizar login", errorMessage);
+                await auth.signOut();
+            } else {
+                console.error("Erro não identificado:", error);
+                console.log("Tipo de erro:", error);
+                console.log("Instância de FirebaseError:", error instanceof FirebaseError);
+                // Caso não seja um erro do Firebase, exibe uma mensagem genérica
+                Alert.alert("Erro desconhecido", "Não foi possível realizar o login.");
+                await auth.signOut();
+            }
+        }
     }
 
     // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
-    if (!fontsLoaded) {
-        return <Text>Carregando...</Text>;
-    }
 
     return (
         <View style={styles.container}>
@@ -69,6 +233,8 @@ export default function Home() {
                             placeholderTextColor="#A0A0A0"
                             onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
                             onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+                            value={email}
+                            onChangeText={setEmail}
                         />
                         <View>
                             <Image
@@ -86,6 +252,8 @@ export default function Home() {
                             secureTextEntry={!isPasswordVisible} // Esconde ou revela o texto
                             onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
                             onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+                            value={password}
+                            onChangeText={setPassword}
                         />
                         <TouchableOpacity onPress={handlePress}>
                             <Image
