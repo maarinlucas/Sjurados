@@ -1,24 +1,40 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, FlatList } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
+import { auth, db } from '../firebase/index'
+import { ref, get, child } from "firebase/database";
+import { signOut } from "firebase/auth";
+import Historico from './Historico'
+
+
 
 export default function Home() {
   const [activeButton, setActiveButton] = useState('Home');
   const [isLoading, setIsLoading] = useState(false);
+
+  const [batalhas, setBatalha] = useState([
+    { id: 1, mc1: 'Kant', mc2: 'Orochi', ponto1: 34, ponto2: 55, errExecucao1: 2, errExecucao2: 3, errConclusao1: 1, errConclusao2: 3, dataDaBatalha: '03/01/2025' },
+    { id: 2, mc1: 'Xamuel', mc2: 'Jhony', ponto1: 14, ponto2: 15, errExecucao1: 2, errExecucao2: 3, errConclusao1: 1, errConclusao2: 3, dataDaBatalha: '03/01/2025' }
+  ]);
+
+  const [userName, setUserName] = useState("Usuário");
   const navigation = useNavigation();
+
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular, // Regular (normal weight)
     Montserrat_700Bold, // Bold weight
-    'BlowBrush': require('../assets/fonts/blowbrush.otf')
+    'BlowBrush': require('../assets/fonts/blowbrush.ttf'),
+    'Ringstun': require("../assets/fonts/ringstun.ttf"),
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
   if (!fontsLoaded) {
     return <Text>Carregando...</Text>;
   }
+
   const criarBatalha = async () => {
     setIsLoading(true);
     // Simula uma operação assíncrona antes de navegar
@@ -26,39 +42,114 @@ export default function Home() {
     setIsLoading(false);
     navigation.navigate("Inicio");
   }
+
+
+const navigateOpcoes = () => {
+  setActiveButton('Opções')
+  navigation.navigate('Opcoes')
+}
+
+  const handleLogout = async () => {
+    try {
+      // Deslogar o usuário utilizando o Firebase
+      await auth.signOut();
+
+      // Remover credenciais do AsyncStorage para desativar login automático
+      /*  await AsyncStorage.removeItem("email");
+       await AsyncStorage.removeItem("password"); */
+
+      // Redefine a navegação e envia o usuário para a tela de Login
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Inicio" }],
+      });
+
+      Alert.alert("Você foi deslogado");
+    } catch (error) {
+      Alert.alert(error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const uid = user.uid;
+          const dbRef = ref(db);
+          const snapshot = await get(child(dbRef, `cadastroS/${uid}`));
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            setUserName(data.nome || "Usuário"); // Define o nome ou um valor padrão
+          } else {
+            console.log("Nenhum dado encontrado para este usuário.");
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao buscar o nome do usuário:", error);
+      }
+    };
+
+    fetchUserName();
+  }, []);
+
+
   return (
 
     <View style={styles.container}>
       <View style={styles.main}>
-        <View style={styles.parte1}>
-          <Text style={styles.textMain}>Salve, nome do usuário!</Text>
-          <Text style={styles.text}>Nenhuma batalha encontrada</Text>
-        </View>
-
-        <View style={styles.parte2}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={criarBatalha}
-            disabled={isLoading} // Desativa o botão enquanto carrega
-          >
-            <LinearGradient
-              colors={['#842ED8', '#DB28A9', '#9D1DCA']} // Cores do gradiente
-              start={{ x: 0, y: 0 }} // Início do gradiente
-              end={{ x: 1, y: 1 }} // Fim do gradiente
-              style={[StyleSheet.absoluteFill, { borderRadius: 8 }]} // Faz o gradiente preencher o botão com bordas arredondadas
-            />
-            {isLoading ? (
-
-              <ActivityIndicator size="small" color="#FFF" />
-
-            ) : (
-
-              <Text style={styles.textBtn}>Adicionar batalha</Text>
-            )}
 
 
-          </TouchableOpacity>
-        </View>
+
+        {batalhas.length > 0 ? (
+          <>
+            <View style={styles.parte1}>
+              <Text style={styles.textMain}>Salve, {userName}!</Text>
+              <Text style={styles.text}>Clique na batalha para mais informações</Text>
+              <FlatList
+                style={{ width: '100%' }}
+                data={batalhas}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => <Historico data={item} />}
+              />
+            </View>
+          </>
+
+
+        ) : (
+          <>
+            <View style={styles.parte1}>
+              <Text style={styles.textMain}>Salve, {userName}!</Text>
+              <Text style={styles.text}>Clique na batalha para mais informações</Text>
+            </View>
+            <View style={styles.parte2}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleLogout}
+                disabled={isLoading} // Desativa o botão enquanto carrega
+              >
+                <LinearGradient
+                  colors={['#842ED8', '#DB28A9', '#9D1DCA']} // Cores do gradiente
+                  start={{ x: 0, y: 0 }} // Início do gradiente
+                  end={{ x: 1, y: 1 }} // Fim do gradiente
+                  style={[StyleSheet.absoluteFill, { borderRadius: 8 }]} // Faz o gradiente preencher o botão com bordas arredondadas
+                />
+                {isLoading ? (
+
+                  <ActivityIndicator size="small" color="#FFF" />
+
+                ) : (
+
+                  <Text style={styles.textBtn}>Adicionar batalha</Text>
+                )}
+
+
+              </TouchableOpacity>
+            </View>
+          </>
+
+        )}
+
       </View>
 
 
@@ -116,7 +207,7 @@ export default function Home() {
             styles.navItem,
             activeButton === 'Opções' && styles.navItemActive,
           ]}
-          onPress={() => setActiveButton('Opções')}
+          onPress={navigateOpcoes}
         >
           <Image
             source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
@@ -144,17 +235,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#190a29',
+
   },
   main: {
     paddingTop: 55,
-    paddingRight: 33,
+    paddingRight: 43,
     paddingBottom: 45,
-    paddingLeft: 33,
+    paddingLeft: 43,
     height: '90%'
   },
   parte1: {
     alignItems: 'flex-start',
-    marginBottom: '80%',
+
   },
   textMain: {
     color: '#FFFFFF', // Cor branca (substituindo var(--White, #FFF))
@@ -172,7 +264,8 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   parte2: {
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingTop: '40%'
   },
   button: {
     // Garante que o gradiente não ultrapasse as bordas arredondadas

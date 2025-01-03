@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "./firebase/index";
 import { getDatabase, ref, set, update, get } from 'firebase/database';
-import DeviceInfo from 'react-native-device-info';
+
 import { FirebaseError } from "firebase/app";
-import { signInWithEmailAndPassword, onAuthStateChanged} from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { format } from 'date-fns'; // Importando a função de formatação
 import { ptBR } from 'date-fns/locale';
@@ -19,7 +19,7 @@ export default function Home() {
     const [isFocused, setIsFocused] = useState(false);
     const [clicked, setClicked] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-   
+
     const [isPasswordVisible, setIsPasswordVisible] = useState(false); // Controla a visibilidade do texto
     const [user2, setUser] = useState(null);
     const [email, setEmail] = useState("");
@@ -34,7 +34,7 @@ export default function Home() {
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
         Montserrat_700Bold, // Bold weight
-        'BlowBrush': require('./assets/fonts/blowbrush.otf'),
+        'BlowBrush': require('./assets/fonts/blowbrush.ttf'),
     });
 
     /*  const logar = async () => {
@@ -62,37 +62,38 @@ export default function Home() {
         };
 
 
-  
+
         loadCredentials();
 
 
     }, []);
 
+    useEffect(() => {
 
-   /*  useEffect(() => {
         // Monitorando o estado de autenticação
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {
                 // O usuário está autenticado
                 setUser(currentUser);
                 navigation.navigate('Home'); // Redireciona para Home caso já esteja logado
+
             } else {
                 // Usuário não autenticado
                 setUser(null);
+
             }
         });
 
         // Limpar a assinatura quando o componente for desmontado
         return () => unsubscribe();
-    }, [navigation]); */
+    }, [navigation]);
 
-    
+
     const logar = async () => {
         setIsLoading(true);
-        try {       
+        try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            const deviceId = await DeviceInfo.getUniqueId();
             const loginTime = format(new Date(), "dd/MM/yyyy HH:mm:ss", { locale: ptBR });
 
             if (user.emailVerified) {
@@ -127,7 +128,6 @@ export default function Home() {
                         // Defina os dados no caminho novo
                         await set(logRef, {
                             email: email,
-                            deviceId: deviceId,
                             loginTime: loginTime,
                         });
 
@@ -228,6 +228,7 @@ export default function Home() {
 
                     <View style={styles.inputContainer}>
                         <TextInput
+                            autoCapitalize="none"
                             style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
                             placeholder="E-mail"
                             placeholderTextColor="#A0A0A0"
@@ -246,6 +247,7 @@ export default function Home() {
 
                     <View style={styles.inputContainer}>
                         <TextInput
+                            autoCapitalize="none"
                             style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
                             placeholder="Senha"
                             placeholderTextColor="#A0A0A0"
@@ -300,14 +302,15 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000000'
+        backgroundColor: '#000000',
+
     },
     background: {
         flex: 1, // Ocupa toda a tela
         paddingTop: 45,
         paddingRight: 23,
         paddingBottom: 45,
-        paddingLeft: 24,
+        paddingLeft: 24
     },
     back: {
         width: 27, // Largura do botão

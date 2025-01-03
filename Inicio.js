@@ -1,26 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ImageBackground, Dimensions, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
+import { onAuthStateChanged } from "firebase/auth";
+
 
 export default function Inicio() {
   const [isLoading, setIsLoading] = useState(false);
-
+/*   const [carregando, setCarregando] = useState(null); */
   const navigation = useNavigation();
+
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular, // Regular (normal weight)
     Montserrat_700Bold, // Bold weight
-    'BlowBrush': require('./assets/fonts/blowbrush.otf'),
+    'BlowBrush': require('./assets/fonts/blowbrush.ttf'),
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
-  if (!fontsLoaded) {
-    return <Text>Carregando...</Text>;
-  }
+  
 
- 
+  
+
+
   const paginaLogin = async () => {
     setIsLoading(true);
     // Simula uma operação assíncrona antes de navegar
@@ -29,6 +32,20 @@ export default function Inicio() {
     navigation.navigate("Login");
   }
 
+
+  if (!fontsLoaded) {
+    return (
+
+      <ImageBackground
+        source={require('./assets/imagens/background.jpg')} // Substitua pelo caminho da sua imagem no projeto
+        style={styles.background}
+      >
+        <ActivityIndicator color="#FFF" size="large" />
+      </ImageBackground>
+
+
+    )
+  }
 
   return (
 
@@ -80,11 +97,7 @@ export default function Inicio() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
+
   background: {
     flex: 1, // Ocupa toda a tela
     alignItems: "center",
@@ -93,6 +106,8 @@ const styles = StyleSheet.create({
     paddingRight: 23,
     paddingBottom: 45,
     paddingLeft: 24,
+    justifyContent: "center",
+    alignItems: "center"
   },
   button: {
     // Garante que o gradiente não ultrapasse as bordas arredondadas

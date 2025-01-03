@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ImageBackground, Dimensions, TouchableOpacity, Image, TextInput, Linking } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, TextInput, Linking, Alert, ActivityIndicator } from "react-native";
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { Checkbox } from 'expo-checkbox';
 import { useNavigation } from "@react-navigation/native";
+import { auth, db } from "./firebase/index";
+import { ref, set, get, child } from 'firebase/database';
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 
 
 export default function Home() {
@@ -11,9 +17,15 @@ export default function Home() {
   const [isFocused, setIsFocused] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [activeButton, setActiveButton] = useState('jurado');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const mcOuJurado = (buttonId) => {
-    // Define o botão pressionado ou desativa o botão atual
+
     setActiveButton(activeButton === buttonId ? null : buttonId);
   };
   const linkTermos = () => {
@@ -27,7 +39,7 @@ export default function Home() {
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular, // Regular (normal weight)
     Montserrat_700Bold, // Bold weight
-    'BlowBrush': require('./assets/fonts/blowbrush.otf'),
+    'BlowBrush': require('./assets/fonts/blowbrush.ttf'),
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
@@ -35,7 +47,66 @@ export default function Home() {
     return <Text>Carregando...</Text>;
   }
 
+  const criarConta = async () => {
+    // Obter identificador único do dispositivo
+    setIsLoading(true);
 
+    if (password !== password2) {
+      Alert.alert("Erro", "As senhas não coincidem.");
+      setIsLoading(false);
+    } else if (!email || !name || !number || !password) {
+      Alert.alert("Erro", "Por favor, preencha todos os campos.");
+      setIsLoading(false);
+    } else if (isChecked == false) {
+      Alert.alert("Erro", "Aceite os termos de uso e privacidade para comtinuar.");
+      setIsLoading(false);
+    } else {
+      try {
+
+
+        // Autenticação do usuário
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        const currentDate = new Date().toLocaleString();
+        await set(ref(db, `cadastroS/${user.uid}-${name}`), {
+          nome: name,
+          email: email,
+          celular: number,
+          senha: password, // Nota: Evite armazenar senhas em texto claro em produção
+          dataCadastro: currentDate,
+          mcJurado: activeButton
+        });
+
+        await sendEmailVerification(user);
+        Alert.alert(
+          "Cadastro realizado",
+          `Um e-mail de verificação foi enviado para ${email}.`
+        );
+        setIsLoading(false);
+        navigation.navigate("Inicio"); // Substitua "LoginScreen" pelo nome correto da sua tela de login
+      } catch (error) {
+        // Tratamento de erros personalizados
+        switch (error.code) {
+          case "auth/email-already-in-use":
+            Alert.alert("Erro", "Este e-mail já está em uso. Tente outro.");
+            setIsLoading(false);
+            break;
+          case "auth/invalid-email":
+            Alert.alert("Erro", "E-mail inválido. Verifique o formato.");
+            setIsLoading(false);
+            break;
+          case "auth/weak-password":
+            Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres.");
+            setIsLoading(false);
+            break;
+          default:
+            Alert.alert("Erro", `Erro ao realizar o cadastro: ${error.message}`);
+            setIsLoading(false);
+        }
+      }
+    }
+  }
 
 
   return (
@@ -63,11 +134,14 @@ export default function Home() {
 
           <View style={styles.inputContainer}>
             <TextInput
+              autoCapitalize="none"
               style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
               placeholder="Nome"
               placeholderTextColor="#A0A0A0"
               onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
               onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              value={name}
+              onChangeText={setName}
             />
             <View>
               <Image
@@ -80,11 +154,14 @@ export default function Home() {
 
           <View style={styles.inputContainer}>
             <TextInput
+              autoCapitalize="none"
               style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
               placeholder="E-mail"
               placeholderTextColor="#A0A0A0"
               onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
               onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              value={email}
+              onChangeText={setEmail}
             />
             <View>
               <Image
@@ -95,11 +172,14 @@ export default function Home() {
           </View>
           <View style={styles.inputContainer}>
             <TextInput
+              autoCapitalize="none"
               style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
               placeholder="Telefone"
               placeholderTextColor="#A0A0A0"
               onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
               onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              value={number}
+              onChangeText={setNumber}
             />
             <View>
               <Image
@@ -110,11 +190,14 @@ export default function Home() {
           </View>
           <View style={styles.inputContainer}>
             <TextInput
+              autoCapitalize="none"
               style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
               placeholder="Senha"
               placeholderTextColor="#A0A0A0"
               onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
               onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              value={password}
+              onChangeText={setPassword}
             />
             <TouchableOpacity>
               <Image
@@ -125,11 +208,14 @@ export default function Home() {
           </View>
           <View style={styles.inputContainer}>
             <TextInput
+              autoCapitalize="none"
               style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
               placeholder="Confirmar senha"
               placeholderTextColor="#A0A0A0"
               onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
               onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              value={password2}
+              onChangeText={setPassword2}
             />
             <TouchableOpacity>
               <Image
@@ -172,6 +258,7 @@ export default function Home() {
               value={isChecked}
               onValueChange={setIsChecked}
               style={styles.checkbox}
+
             />
             <TouchableOpacity style={styles.termos} onPress={linkTermos}>
               <Text style={styles.termosText}>
@@ -184,8 +271,17 @@ export default function Home() {
 
 
           </View>
-          <TouchableOpacity style={styles.BtnContainer}>
-            <Text style={styles.BtnTextb}>Criar conta</Text>
+          <TouchableOpacity
+            style={styles.BtnContainer}
+            disabled={isLoading}
+            onPress={criarConta}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.BtnTextb}>Criar conta</Text>
+            )}
+
           </TouchableOpacity>
         </View>
       </ImageBackground>
