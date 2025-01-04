@@ -8,17 +8,31 @@ import { auth, db } from '../firebase/index'
 import { ref, get, child } from "firebase/database";
 import { signOut } from "firebase/auth";
 import Historico from './Historico'
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function Home() {
   const [activeButton, setActiveButton] = useState('Home');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [batalhas, setBatalha] = useState([
-    { id: 1, mc1: 'Kant', mc2: 'Orochi', ponto1: 34, ponto2: 55, errExecucao1: 2, errExecucao2: 3, errConclusao1: 1, errConclusao2: 3, dataDaBatalha: '03/01/2025' },
-    { id: 2, mc1: 'Xamuel', mc2: 'Jhony', ponto1: 14, ponto2: 15, errExecucao1: 2, errExecucao2: 3, errConclusao1: 1, errConclusao2: 3, dataDaBatalha: '03/01/2025' }
-  ]);
+  
+
+  const [batalhas, setBatalha] = useState([]);
+
+  const loadData = async () => {
+    try {
+      const existingData = await AsyncStorage.getItem('batalhas'); // Recupera os dados
+      const parsedData = existingData ? JSON.parse(existingData) : []; // Converte para array
+      setBatalha(parsedData); // Atualiza o estado com os dados carregados
+      console.log('Dados carregados:', parsedData);
+    } catch (error) {
+      console.error('Erro ao carregar os dados:', error);
+    }
+  };
+  
+  useEffect(() => {
+    loadData(); // Carrega os dados ao montar a tela
+  }, []);
 
   const [userName, setUserName] = useState("Usuário");
   const navigation = useNavigation();
@@ -44,10 +58,17 @@ export default function Home() {
   }
 
 
-const navigateOpcoes = () => {
-  setActiveButton('Opções')
-  navigation.navigate('Opcoes')
-}
+  const navigateOpcoes = () => {
+    setActiveButton('Opções')
+    navigation.navigate('Opcoes')
+  }
+
+
+  const navigateBatalha = () => {
+    setActiveButton('Adicionar Batalha')
+    navigation.navigate('Batalha')
+  }
+
 
   const handleLogout = async () => {
     try {
@@ -70,28 +91,45 @@ const navigateOpcoes = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchUserName = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const uid = user.uid;
-          const dbRef = ref(db);
-          const snapshot = await get(child(dbRef, `cadastroS/${uid}`));
-          if (snapshot.exists()) {
-            const data = snapshot.val();
-            setUserName(data.nome || "Usuário"); // Define o nome ou um valor padrão
-          } else {
-            console.log("Nenhum dado encontrado para este usuário.");
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao buscar o nome do usuário:", error);
-      }
-    };
+  const deleteData = async (id) => {
+    try {
+      const existingData = await AsyncStorage.getItem('batalhas');
+      const parsedData = existingData ? JSON.parse(existingData) : [];
 
-    fetchUserName();
-  }, []);
+      // Filtra a batalha a ser excluída
+      const updatedData = parsedData.filter(item => item.id !== id);
+      
+      await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData)); // Atualiza o AsyncStorage
+      setBatalha(updatedData); // Atualiza o estado local
+      console.log('Item excluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir os dados:', error);
+    }
+  };
+
+
+  /*   useEffect(() => {
+      const fetchUserName = async () => {
+        try {
+          const user = auth.currentUser;
+          if (user) {
+            const uid = user.uid;
+            const dbRef = ref(db);
+            const snapshot = await get(child(dbRef, `cadastroS/${uid}`));
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              setUserName(data.nome || "Usuário"); // Define o nome ou um valor padrão
+            } else {
+              console.log("Nenhum dado encontrado para este usuário.");
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao buscar o nome do usuário:", error);
+        }
+      };
+  
+      fetchUserName();
+    }, []); */
 
 
   return (
@@ -110,7 +148,7 @@ const navigateOpcoes = () => {
                 style={{ width: '100%' }}
                 data={batalhas}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <Historico data={item} />}
+                renderItem={({ item }) => <Historico data={item} onDelete={deleteData} />}
               />
             </View>
           </>
@@ -183,7 +221,7 @@ const navigateOpcoes = () => {
             styles.navItem,
             activeButton === 'Adicionar Batalha' && styles.navItemActive,
           ]}
-          onPress={() => setActiveButton('Adicionar Batalha')}
+          onPress={navigateBatalha}
         >
           <Image
             source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem

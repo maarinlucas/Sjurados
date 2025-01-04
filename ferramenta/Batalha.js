@@ -1,36 +1,41 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, FlatList } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Modal, TextInput, Button } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
-import { auth, db } from '../firebase/index'
-import { ref, get, child } from "firebase/database";
-import { signOut } from "firebase/auth";
+import { auth } from '../firebase/index'
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import Historico from './Historico'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { v4 as uuidv4 } from 'uuid';
 
 
 export default function Opcoes() {
-    const [activeButton, setActiveButton] = useState('Opções');
+    const [activeButton, setActiveButton] = useState('Adicionar Batalha');
     const [isLoading, setIsLoading] = useState(false);
-    const [savedData, setSavedData] = useState({ ponto1: '', ponto2: '', id: '', mc1: '', mc2: '', data: '' });
+    const [modalVisible, setModalVisible] = useState(false);
+    const [ponto1, setPonto1] = useState('')
+    const [ponto2, setPonto2] = useState('')
+    const [mc1, setMc1] = useState('')
+    const [mc2, setMc2] = useState('')
+    const [data, setData] = useState('')
+
+    const [batalhas, setBatalha] = useState([]);
 
 
-    const [userName, setUserName] = useState("Opções");
+    const openModal = () => {
+        setModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setModalVisible(false);
+    };
+
     const navigation = useNavigation();
 
-    const [fontsLoaded] = useFonts({
-        Montserrat_400Regular, // Regular (normal weight)
-        Montserrat_700Bold, // Bold weight
-        'BlowBrush': require('../assets/fonts/blowbrush.ttf'),
-        'Ringstun': require("../assets/fonts/ringstun.ttf"),
-    });
 
-    // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
-    if (!fontsLoaded) {
-        return <Text>Carregando...</Text>;
-    }
+
 
     const criarBatalha = async () => {
         setIsLoading(true);
@@ -46,7 +51,39 @@ export default function Opcoes() {
         navigation.navigate('Home')
     }
 
+    const navigateOpcoes = () => {
+        setActiveButton('Opções')
+        navigation.navigate('Opcoes')
+    }
 
+    const saveData = async () => {
+        try {
+          const existingData = await AsyncStorage.getItem('batalhas'); // Recupera a lista existente
+          const parsedData = existingData ? JSON.parse(existingData) : []; // Converte para array
+      
+          // Gerar um ID único usando uuid
+          const id = uuidv4(); // Gera um UUID único
+      
+          const newBatalha = {
+            ponto1,
+            ponto2,
+            mc1,
+            mc2,
+            id,  // ID gerado
+            data,
+          };
+      
+          const updatedData = [...parsedData, newBatalha]; // Adiciona o novo item à lista existente
+      
+          await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData)); // Salva a lista atualizada
+          setBatalha(updatedData); // Atualiza o estado local
+          console.log('Dados salvos com sucesso!');
+        } catch (error) {
+          console.error('Erro ao salvar os dados:', error);
+        }
+      };
+
+  
 
     const handleLogout = async () => {
         try {
@@ -70,20 +107,67 @@ export default function Opcoes() {
     };
 
 
-    const navigateBatalha = () => {
-        setActiveButton('Adicionar Batalha')
-        navigation.navigate('Batalha')
-    }
+
 
     return (
 
         <View style={styles.container}>
+            <Modal
+                visible={modalVisible}
+                transparent={true}
+                onRequestClose={closeModal}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalText}>Este é um modal em tela cheia!</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Ponto 1"
+                            value={ponto1}
+                            onChangeText={(text) => setPonto1(text)}  // Atualiza o valor de ponto1
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Ponto 2"
+                            value={ponto2}
+                            onChangeText={(text) => setPonto2(text)}  // Atualiza o valor de ponto2
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Mc1"
+                            value={mc1}
+                            onChangeText={(text) => setMc1(text)}  // Atualiza o valor de ponto1
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Mc2"
+                            value={mc2}
+                            onChangeText={(text) => setMc2(text)}  // Atualiza o valor de ponto2
+                        />
+                       
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="data"
+                            value={data}
+                            onChangeText={(text) => setData(text)}  // Atualiza o valor de ponto2
+                        />
+
+
+                        <Button title="Salvar Dados" onPress={saveData} />
+                       
+                        <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+                            <Text style={styles.closeButtonText}>Fechar Modal</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
             <View style={styles.main}>
 
                 <View style={styles.parte2}>
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={handleLogout}
+                        onPress={openModal}
                         disabled={isLoading} // Desativa o botão enquanto carrega
                     >
                         <LinearGradient
@@ -98,7 +182,7 @@ export default function Opcoes() {
 
                         ) : (
 
-                            <Text style={styles.textBtn}>Sair</Text>
+                            <Text style={styles.textBtn}>Adicioanr</Text>
                         )}
 
 
@@ -107,6 +191,7 @@ export default function Opcoes() {
 
 
             </View>
+
 
             <View style={styles.footer}>
                 <TouchableOpacity
@@ -138,7 +223,7 @@ export default function Opcoes() {
                         styles.navItem,
                         activeButton === 'Adicionar Batalha' && styles.navItemActive,
                     ]}
-                    onPress={navigateBatalha}
+                    onPress={() => setActiveButton('Adicionar Batalha')}
                 >
                     <Image
                         source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem
@@ -162,7 +247,7 @@ export default function Opcoes() {
                         styles.navItem,
                         activeButton === 'Opções' && styles.navItemActive,
                     ]}
-                    onPress={() => { setActiveButton('Opções') }}
+                    onPress={navigateOpcoes}
                 >
                     <Image
                         source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
@@ -288,6 +373,34 @@ const styles = StyleSheet.create({
     },
     navIconActive: {
         tintColor: '#000000', // Torna o ícone preto quando ativo
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Fundo semitransparente para o modal
+    },
+    modalContent: {
+        width: '100%', // Modal ocupa toda a largura da tela
+        height: '100%', // Modal ocupa toda a altura da tela
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    closeButton: {
+        backgroundColor: '#DB28A9',
+        padding: 10,
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: '#fff',
+        fontSize: 16,
     },
 
 });

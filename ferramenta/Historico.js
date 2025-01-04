@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
 
-export default function Historico({ data }) {
+export default function Historico({ data, onDelete }) {
   // Carregando a fonte
   const [fontsLoaded] = useFonts({
     'Ringstun': require('../assets/fonts/ringstun.ttf'),
@@ -14,8 +14,6 @@ export default function Historico({ data }) {
     return <Text>Carregando fontes...</Text>;
   }
 
-  console.log(fontsLoaded);
-  
   return (
     <View style={styles.batalhas}>
       <TouchableOpacity style={styles.batalha}>
@@ -24,7 +22,7 @@ export default function Historico({ data }) {
         </View>
 
         <View style={styles.placarData}>
-          <Text style={styles.textData}>{data.dataDaBatalha}</Text>
+          <Text style={styles.textData}>{data.data}</Text>
           <Text style={styles.textPontos}>
             {data.ponto1} X {data.ponto2}
           </Text>
@@ -33,6 +31,11 @@ export default function Historico({ data }) {
         <View style={styles.nomeMc}>
           <Text style={styles.textMc}>{data.mc2}</Text>
         </View>
+
+        {/* Botão de excluir */}
+        <TouchableOpacity onPress={() => onDelete(data.id)} style={styles.deleteButton}>
+          <Text style={styles.deleteText}>Excluir</Text>
+        </TouchableOpacity>
       </TouchableOpacity>
     </View>
   );
@@ -63,7 +66,6 @@ const styles = StyleSheet.create({
     fontFamily: "BlowBrush", // Nome da fonte
     textAlign: 'center'
   },
-
   textData: {
     color: "#ffffff",
     fontWeight: "bold",
@@ -78,5 +80,14 @@ const styles = StyleSheet.create({
     fontFamily: "BlowBrush", // Nome da fonte
     textAlign: 'center',
     letterSpacing: 2
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    padding: 5,
+    borderRadius: 5,
+  },
+  deleteText: {
+    color: 'white',
+    fontWeight: 'bold',
   }
 });
