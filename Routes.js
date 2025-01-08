@@ -15,8 +15,9 @@ export default function Routes() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        screenOptions={{ headerShown: false }}
-        initialRouteName="Inicio"
+        screenOptions={{ headerShown: false,  animation: 'none' }}
+        initialRouteName="Batalha"
+        
       >
         <Stack.Screen name="Inicio" component={Inicio} />
         <Stack.Screen name="Login" component={Login} />

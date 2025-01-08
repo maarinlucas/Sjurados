@@ -70,6 +70,8 @@ export default function Home() {
   }
 
 
+  
+  
   const handleLogout = async () => {
     try {
       // Deslogar o usuário utilizando o Firebase
@@ -163,7 +165,7 @@ export default function Home() {
             <View style={styles.parte2}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={handleLogout}
+                onPress={navigateBatalha}
                 disabled={isLoading} // Desativa o botão enquanto carrega
               >
                 <LinearGradient

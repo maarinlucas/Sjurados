@@ -49,8 +49,8 @@ export default function Home() {
         const loadCredentials = async () => {
             try {
                 // Recupera email e senha armazenados no AsyncStorage
-                const savedEmail = await AsyncStorage.getItem("email");
-                const savedPassword = await AsyncStorage.getItem("password");
+                const savedEmail = await AsyncStorage.getItem("loginEmail");
+                const savedPassword = await AsyncStorage.getItem("loginPassword");
 
                 if (savedEmail) setEmail(savedEmail); // Seta o email no estado
                 if (savedPassword) setPassword(savedPassword); // Seta a senha no estado
@@ -99,8 +99,8 @@ export default function Home() {
             if (user.emailVerified) {
                 // Armazena email e senha no AsyncStorage              
                 const userRef = ref(db, "cadastroS/" + user.uid);
-                /* await AsyncStorage.setItem("email", email);
-                await AsyncStorage.setItem("password", password); */
+                await AsyncStorage.setItem("loginEmail", email);
+                await AsyncStorage.setItem("loginPassword", password);
 
                 // Obtem o número único do dispositivo
                 /*   const deviceId = await DeviceInfo.getUniqueId();
