@@ -13,7 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home() {
   const [activeButton, setActiveButton] = useState('Home');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAdd, setIsLoadingAdd] = useState(false);
+  const [isLoadingScreen, setIsLoadingScreen] = useState(true);
 
   
 
@@ -24,7 +25,7 @@ export default function Home() {
       const existingData = await AsyncStorage.getItem('batalhas'); // Recupera os dados
       const parsedData = existingData ? JSON.parse(existingData) : []; // Converte para array
       setBatalha(parsedData); // Atualiza o estado com os dados carregados
-      console.log('Dados carregados:', parsedData);
+      
     } catch (error) {
       console.error('Erro ao carregar os dados:', error);
     }
@@ -35,63 +36,41 @@ export default function Home() {
   }, []);
 
   const [userName, setUserName] = useState("Usuário");
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const navigation = useNavigation();
 
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular, // Regular (normal weight)
     Montserrat_700Bold, // Bold weight
-    'BlowBrush': require('../assets/fonts/blowbrush.ttf'),
     'Ringstun': require("../assets/fonts/ringstun.ttf"),
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
-  if (!fontsLoaded) {
-    return <Text>Carregando...</Text>;
-  }
-
-  const criarBatalha = async () => {
-    setIsLoading(true);
-    // Simula uma operação assíncrona antes de navegar
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    navigation.navigate("Inicio");
-  }
-
+  
 
   const navigateOpcoes = () => {
-    setActiveButton('Opções')
-    navigation.navigate('Opcoes')
+    setActiveButton('Opções');
+    setIsLoadingScreen(true);
+     setTimeout(() => {
+            navigation.navigate('Opcoes');
+        }, 100);
+    
   }
-
 
   const navigateBatalha = () => {
-    setActiveButton('Adicionar Batalha')
-    navigation.navigate('Batalha')
+    setActiveButton('Adicionar Batalha');
+    setIsLoadingScreen(true);
+     setTimeout(() => {
+            navigation.navigate('Batalha');
+        }, 100);
   }
 
-
-  
-  
-  const handleLogout = async () => {
-    try {
-      // Deslogar o usuário utilizando o Firebase
-      await auth.signOut();
-
-      // Remover credenciais do AsyncStorage para desativar login automático
-      /*  await AsyncStorage.removeItem("email");
-       await AsyncStorage.removeItem("password"); */
-
-      // Redefine a navegação e envia o usuário para a tela de Login
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Inicio" }],
-      });
-
-      Alert.alert("Você foi deslogado");
-    } catch (error) {
-      Alert.alert(error);
-    }
-  };
+  const handleAddBatalhaButton = () => {
+    setIsLoadingAdd(true);
+    setActiveButton('Adicionar Batalha');
+    setIsLoadingAdd(false);
+    navigation.navigate('Batalha');
+  }
 
   const deleteData = async (id) => {
     try {
@@ -103,14 +82,14 @@ export default function Home() {
       
       await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData)); // Atualiza o AsyncStorage
       setBatalha(updatedData); // Atualiza o estado local
-      console.log('Item excluído com sucesso!');
+      
     } catch (error) {
       console.error('Erro ao excluir os dados:', error);
     }
   };
 
 
-  /*   useEffect(() => {
+     useEffect(() => {
       const fetchUserName = async () => {
         try {
           const user = auth.currentUser;
@@ -120,79 +99,88 @@ export default function Home() {
             const snapshot = await get(child(dbRef, `cadastroS/${uid}`));
             if (snapshot.exists()) {
               const data = snapshot.val();
-              setUserName(data.nome || "Usuário"); // Define o nome ou um valor padrão
+              setUserName(data.nome || "Usuário");
             } else {
               console.log("Nenhum dado encontrado para este usuário.");
             }
           }
         } catch (error) {
           console.error("Erro ao buscar o nome do usuário:", error);
+        } finally {
+          setIsLoadingUser(false);
         }
       };
   
       fetchUserName();
-    }, []); */
+    }, []); 
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      setIsLoadingScreen(false);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  // Efeito para o carregamento inicial
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoadingScreen(false);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-
     <View style={styles.container}>
-      <View style={styles.main}>
-
-
-
-        {batalhas.length > 0 ? (
-          <>
-            <View style={styles.parte1}>
-              <Text style={styles.textMain}>Salve, {userName}!</Text>
-              <Text style={styles.text}>Clique na batalha para mais informações</Text>
-              <FlatList
-                style={{ width: '100%' }}
-                data={batalhas}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <Historico data={item} onDelete={deleteData} />}
-              />
-            </View>
-          </>
-
-
-        ) : (
-          <>
-            <View style={styles.parte1}>
-              <Text style={styles.textMain}>Salve, {userName}!</Text>
-              <Text style={styles.text}>Clique na batalha para mais informações</Text>
-            </View>
-            <View style={styles.parte2}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={navigateBatalha}
-                disabled={isLoading} // Desativa o botão enquanto carrega
-              >
-                <LinearGradient
-                  colors={['#842ED8', '#DB28A9', '#9D1DCA']} // Cores do gradiente
-                  start={{ x: 0, y: 0 }} // Início do gradiente
-                  end={{ x: 1, y: 1 }} // Fim do gradiente
-                  style={[StyleSheet.absoluteFill, { borderRadius: 8 }]} // Faz o gradiente preencher o botão com bordas arredondadas
+      {(isLoadingScreen || isLoadingUser) ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FFF" />
+        </View>
+      ) : (
+        <View style={styles.main}>
+          {batalhas.length > 0 ? (
+            <>
+              <View style={styles.parte1b}>
+                <Text style={styles.textMain}>Salve, {userName}!</Text>
+                <Text style={styles.text}>Clique na batalha para mais informações</Text>
+                <FlatList
+                  style={{ width: '100%' }}
+                  data={batalhas}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => <Historico data={item} onDelete={deleteData} />}
                 />
-                {isLoading ? (
-
-                  <ActivityIndicator size="small" color="#FFF" />
-
-                ) : (
-
-                  <Text style={styles.textBtn}>Adicionar batalha</Text>
-                )}
-
-
-              </TouchableOpacity>
-            </View>
-          </>
-
-        )}
-
-      </View>
-
-
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.parte1}>
+                <Text style={styles.textMain}>Salve, {userName}!</Text>
+                <Text style={styles.text}>Você ainda não tem batalhas salvas</Text>
+              </View>
+              <View style={styles.parte2}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={navigateBatalha}
+                  disabled={isLoadingAdd}
+                >
+                  <LinearGradient
+                    colors={['#842ED8', '#DB28A9', '#9D1DCA']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 8 }]}
+                  />
+                  {isLoadingAdd ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={styles.textBtn}>Adicionar batalha</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
+      )}
       <View style={styles.footer}>
         <TouchableOpacity
           style={[
@@ -200,9 +188,10 @@ export default function Home() {
             activeButton === 'Home' && styles.navItemActive,
           ]}
           onPress={() => setActiveButton('Home')}
+          disabled={isLoadingScreen}
         >
           <Image
-            source={require('../assets/icons/home.png')} // Substitua pelo caminho da sua imagem
+            source={require('../assets/icons/home.png')}
             style={[
               styles.navIcon,
               activeButton === 'Home' && styles.navIconActive,
@@ -224,9 +213,10 @@ export default function Home() {
             activeButton === 'Adicionar Batalha' && styles.navItemActive,
           ]}
           onPress={navigateBatalha}
+          disabled={isLoadingScreen}
         >
           <Image
-            source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem
+            source={require('../assets/icons/add.png')}
             style={[
               styles.navIcon,
               activeButton === 'Adicionar Batalha' && styles.navIconActive,
@@ -248,9 +238,10 @@ export default function Home() {
             activeButton === 'Opções' && styles.navItemActive,
           ]}
           onPress={navigateOpcoes}
+          disabled={isLoadingScreen}
         >
           <Image
-            source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
+            source={require('../assets/icons/options.png')}
             style={[
               styles.navIcon,
               activeButton === 'Opções' && styles.navIconActive,
@@ -266,7 +257,6 @@ export default function Home() {
           </Text>
         </TouchableOpacity>
       </View>
-
     </View>
   );
 }
@@ -288,12 +278,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
 
   },
+  parte1b: {
+    alignItems: 'flex-start',
+    height: '105%'
+
+  },
   textMain: {
     color: '#FFFFFF', // Cor branca (substituindo var(--White, #FFF))
     fontSize: 29,// Tamanho da fonte
     fontStyle: 'normal', // Estilo normal da fonte
     fontWeight: '400', // Peso da fonte
-    fontFamily: 'BlowBrush',
+    fontFamily: 'Ringstun',
   },
   text: {
     color: '#A5A5A5', // Cor Light-gray
@@ -374,6 +369,12 @@ const styles = StyleSheet.create({
   navIconActive: {
     tintColor: '#000000', // Torna o ícone preto quando ativo
   },
-
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#190a29',
+    height: '90%'
+  },
 });
 

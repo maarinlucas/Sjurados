@@ -3,7 +3,7 @@ import { auth, db } from "./firebase/index";
 import { getDatabase, ref, set, update, get } from 'firebase/database';
 
 import { FirebaseError } from "firebase/app";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { format } from 'date-fns'; // Importando a função de formatação
 import { ptBR } from 'date-fns/locale';
@@ -13,7 +13,7 @@ import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
 
-export default function Home() {
+export default function Login() {
 
     const navigation = useNavigation();
     const [isFocused, setIsFocused] = useState(false);
@@ -31,19 +31,15 @@ export default function Home() {
         setClicked(!clicked);
     };
 
+   
+
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
         Montserrat_700Bold, // Bold weight
-        'BlowBrush': require('./assets/fonts/blowbrush.ttf'),
-    });
+        'Ringstun': require("./assets/fonts/ringstun.ttf"),
+      });
 
-    /*  const logar = async () => {
-         setIsLoading(true);
-         // Simula uma operação assíncrona antes de navegar
-         await new Promise((resolve) => setTimeout(resolve, 1000));
-         setIsLoading(false);
-         navigation.navigate("Home");
-     } */
+    
 
     useEffect(() => {
         const loadCredentials = async () => {
@@ -270,7 +266,10 @@ export default function Home() {
                     </View>
 
 
-                    <TouchableOpacity style={styles.mudarSenha}>
+                    <TouchableOpacity 
+                        style={styles.mudarSenha} 
+                        onPress={() => navigation.navigate("Recuperar")}
+                    >
                         <Text style={styles.text}>Esqueceu a senha?</Text>
                     </TouchableOpacity>
 

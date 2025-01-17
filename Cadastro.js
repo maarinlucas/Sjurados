@@ -39,7 +39,7 @@ export default function Home() {
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular, // Regular (normal weight)
     Montserrat_700Bold, // Bold weight
-    'BlowBrush': require('./assets/fonts/blowbrush.ttf'),
+    'Ringstun': require('./assets/fonts/ringstun.ttf'),
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
@@ -47,9 +47,62 @@ export default function Home() {
     return <Text>Carregando...</Text>;
   }
 
+  const formatPhoneNumber = (text) => {
+    // Remove todos os caracteres não numéricos
+    const cleaned = text.replace(/\D/g, '');
+    
+    // Aplica a máscara (xx)xxxxx-xxxx
+    let formatted = cleaned;
+    if (cleaned.length <= 11) {
+      formatted = cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1)$2-$3');
+    }
+    
+    return formatted;
+  };
+
+  const validateName = (text) => {
+    // Remove caracteres especiais não permitidos
+    return text.replace(/[.$\[\]/#]/g, '');
+  };
+
+  const handleNameChange = (text) => {
+    const validatedName = validateName(text);
+    setName(validatedName);
+  };
+
+  const handlePhoneChange = (text) => {
+    const formattedNumber = formatPhoneNumber(text);
+    setNumber(formattedNumber);
+  };
+
+  const validateEmail = (text) => {
+    // Remove espaços em branco e converte para minúsculas
+    const cleanedEmail = text.toLowerCase().trim();
+    
+    // Se o usuário digitou @, verifica se é @gmail.com
+    if (cleanedEmail.includes('@')) {
+      if (!cleanedEmail.endsWith('@gmail.com')) {
+        return cleanedEmail.split('@')[0] + '@gmail.com';
+      }
+    }
+    
+    return cleanedEmail;
+  };
+
+  const handleEmailChange = (text) => {
+    const formattedEmail = validateEmail(text);
+    setEmail(formattedEmail);
+  };
+
   const criarConta = async () => {
     // Obter identificador único do dispositivo
     setIsLoading(true);
+
+    if (!email.endsWith('@gmail.com')) {
+      Alert.alert("Erro", "Por favor, utilize um endereço Gmail válido.");
+      setIsLoading(false);
+      return;
+    }
 
     if (password !== password2) {
       Alert.alert("Erro", "As senhas não coincidem.");
@@ -134,14 +187,15 @@ export default function Home() {
 
           <View style={styles.inputContainer}>
             <TextInput
-              autoCapitalize="none"
-              style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+             
+              style={[styles.input, isFocused && styles.inputFocused]}
               placeholder="Nome"
               placeholderTextColor="#A0A0A0"
-              onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-              onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               value={name}
-              onChangeText={setName}
+              onChangeText={handleNameChange}
+              maxLength={50}
             />
             <View>
               <Image
@@ -155,13 +209,14 @@ export default function Home() {
           <View style={styles.inputContainer}>
             <TextInput
               autoCapitalize="none"
-              style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
-              placeholder="E-mail"
+              style={[styles.input, isFocused && styles.inputFocused]}
+              placeholder="Gmail"
               placeholderTextColor="#A0A0A0"
-              onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-              onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={handleEmailChange}
+              keyboardType="email-address"
             />
             <View>
               <Image
@@ -173,13 +228,15 @@ export default function Home() {
           <View style={styles.inputContainer}>
             <TextInput
               autoCapitalize="none"
-              style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+              style={[styles.input, isFocused && styles.inputFocused]}
               placeholder="Telefone"
               placeholderTextColor="#A0A0A0"
-              onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-              onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               value={number}
-              onChangeText={setNumber}
+              onChangeText={handlePhoneChange}
+              keyboardType="numeric"
+              maxLength={14}
             />
             <View>
               <Image
@@ -191,11 +248,11 @@ export default function Home() {
           <View style={styles.inputContainer}>
             <TextInput
               autoCapitalize="none"
-              style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+              style={[styles.input, isFocused && styles.inputFocused]}
               placeholder="Senha"
               placeholderTextColor="#A0A0A0"
-              onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-              onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               value={password}
               onChangeText={setPassword}
             />
@@ -209,11 +266,11 @@ export default function Home() {
           <View style={styles.inputContainer}>
             <TextInput
               autoCapitalize="none"
-              style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+              style={[styles.input, isFocused && styles.inputFocused]}
               placeholder="Confirmar senha"
               placeholderTextColor="#A0A0A0"
-              onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-              onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               value={password2}
               onChangeText={setPassword2}
             />
@@ -231,22 +288,22 @@ export default function Home() {
           <View style={styles.BtnsContainer}>
 
             <TouchableOpacity
-              style={[styles.Btn, activeButton === 'mc' && styles.BtnPressed]} // Aplica a cor de fundo e borda quando pressionado
+              style={[styles.Btn, activeButton === 'mc' && styles.BtnPressed]}
               onPress={() => mcOuJurado('mc')}
             >
               <Image
-                source={require('./assets/imagens/save.png')} // Substitua pelo caminho da sua imagem
+                source={require('./assets/imagens/save.png')}
                 style={styles.btnIcon}
               />
               <Text style={styles.BtnText}>Sou MC</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.Btn, activeButton === 'jurado' && styles.BtnPressed]} // Aplica a cor de fundo e borda quando pressionado
+              style={[styles.Btn, activeButton === 'jurado' && styles.BtnPressed]}
               onPress={() => mcOuJurado('jurado')}
             >
               <Image
-                source={require('./assets/imagens/lapis.png')} // Substitua pelo caminho da sua imagem
+                source={require('./assets/imagens/lapis.png')}
                 style={styles.btnIcon}
               />
               <Text style={styles.BtnText}>Sou jurado</Text>
@@ -322,7 +379,7 @@ const styles = StyleSheet.create({
     fontStyle: 'normal', // Estilo normal da fonte
     fontWeight: '400', // Peso da fonte
     lineHeight: 25, // Altura da linha
-    fontFamily: 'BlowBrush',
+    fontFamily: 'Ringstun',
     paddingRight: 20,
 
   },

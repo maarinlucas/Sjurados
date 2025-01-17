@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
-import { onAuthStateChanged } from "firebase/auth";
+
 
 
 export default function Inicio() {
@@ -15,7 +15,7 @@ export default function Inicio() {
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular, // Regular (normal weight)
     Montserrat_700Bold, // Bold weight
-    'BlowBrush': require('./assets/fonts/blowbrush.ttf'),
+    'Ringstun': require('./assets/fonts/ringstun.ttf'),
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     fontStyle: 'normal', // Estilo normal da fonte
     lineHeight: 25, // Altura da linha
     marginBottom: 10,
-    fontFamily: 'BlowBrush'
+    fontFamily: 'Ringstun'
   },
   textCitaçao: {
     color: '#A5A5A5', // Cor Light-gray

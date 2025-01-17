@@ -19,13 +19,28 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.seuusername.s_jurados",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O aplicativo precisa acessar suas fotos para selecionar imagens das batalhas."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5c550b35-c94a-40b1-af67-253768ccde2e"
+      }
+    }
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Modal, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Modal, TextInput, Alert } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
@@ -13,14 +13,18 @@ import Historico from './Historico'
 import UUID from 'react-native-uuid';
 
 
-export default function Opcoes() {
+export default function Batalha() {
     const [activeButton, setActiveButton] = useState('Adicionar Batalha');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isFocused, setIsFocused] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalVisible2, setModalVisible2] = useState(false);
-    const [modalVisible3, setModalVisible3] = useState(false);
-    const [modalVisible4, setModalVisible4] = useState(false);
+    const [botoesEspeciais, setbotoesEspeciais] = useState(false);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 50);
+    }, []);
 
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
@@ -29,125 +33,402 @@ export default function Opcoes() {
         'Ringstun': require("../assets/fonts/ringstun.ttf"),
     });
 
-   
+    const navigation = useNavigation();
 
     const [ponto1, setPonto1] = useState(0)
     const [ponto2, setPonto2] = useState(0)
-    const [pontoTotal1, setPontoTotal1] = useState(0)
-    const [pontoTotal2, setPontoTotal2] = useState(0)
     const [mc1, setMc1] = useState('')
     const [mc2, setMc2] = useState('')
-    const [mcVencedor, setMcVencedor] = useState({
-        image: require('../assets/imagens/trofeu.png'), // URL da imagem
-        text: '', // String
-    })
-    const [mcPerdedor, setMcPerdedor] = useState('')
-    const [selectedNumber, setSelectedNumber] = useState("3");
+    const [palco1, setPalco1] = useState(0)
+    const [tecnica1, setTecnica1] = useState(0)
+    const [flow1, setFlow1] = useState(0)
+    const [palco2, setPalco2] = useState(0)
+    const [tecnica2, setTecnica2] = useState(0)
+    const [flow2, setFlow2] = useState(0)
     const [round, setRound] = useState(0);
     const [data, setData] = useState('19/01/1999')
+    const [selectedRound, setSelectedRound] = useState("3");
+
+    const [mc1RoundsVencidos, setMc1RoundsVencidos] = useState(0);
+    const [mc2RoundsVencidos, setMc2RoundsVencidos] = useState(0);
+
+
+
+    const [pontoTotal1, setPontoTotal1] = useState(0)
+    const [pontoTotal2, setPontoTotal2] = useState(0)
+    const [palcoTotal1, setPalcoTotal1] = useState(0)
+    const [tecnicaTotal1, setTecnicaTotal1] = useState(0)
+    const [flowTotal1, setFlowTotal1] = useState(0)
+    const [palcoTotal2, setPalcoTotal2] = useState(0)
+    const [tecnicaTotal2, setTecnicaTotal2] = useState(0)
+    const [flowTotal2, setFlowTotal2] = useState(0)
+
+
+
+
+
 
     const [batalhas, setBatalha] = useState([]);
 
 
+
     const openModalBatalha = () => {
         setModalVisible(true);
-        setModalVisible2(false);
     };
 
-    const openModalConfirmar = () => {
-        setModalVisible2(true);
+
+    const openModalEspecial = () => {
+        if (ponto1 > ponto2) {
+            setMc1RoundsVencidos(mc1RoundsVencidos + 1)
+            setbotoesEspeciais(true)
+        } else if (ponto2 > ponto1) {
+            setMc2RoundsVencidos(mc2RoundsVencidos + 1)
+            setbotoesEspeciais(true)
+        } else if (ponto1 == ponto2) {
+            setMc1RoundsVencidos(mc1RoundsVencidos + 1)
+            setMc2RoundsVencidos(mc2RoundsVencidos + 1)
+            setbotoesEspeciais(true)
+        }
     };
 
-    const openModalZerar = () => {
-        setModalVisible3(true);
+
+    const closeModalEspecial = () => {
+        setbotoesEspeciais(false);
+        if (ponto1 > ponto2) {
+            setMc1RoundsVencidos(mc1RoundsVencidos - 1)
+            setbotoesEspeciais(false)
+        } else if (ponto2 > ponto1) {
+            setMc2RoundsVencidos(mc2RoundsVencidos - 1)
+            setbotoesEspeciais(false)
+        } else if (ponto1 == ponto2) {
+            setMc1RoundsVencidos(mc1RoundsVencidos - 1)
+            setMc2RoundsVencidos(mc2RoundsVencidos - 1)
+            setbotoesEspeciais(false)
+        }
     };
 
-    const openModalSalvar = () => {
-        setModalVisible4(true);
-    };
+    const openAlertConfirmar = () => {
+        if (mc1 == '' || mc2 == '') {
+            Alert.alert('Erro', 'Por favor, preencha todos os campos.', [
+                { text: 'OK', style: 'cancel' },
+            ]);
+        } else {
+            Alert.alert('Confirmar', 'Deseja salvar as informações?', [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Confirmar', onPress: () => {
+                        openModalBatalha()
+                    }
+                }
+            ]);
+        }
+
+    }
+    const openAlertZerarEspeciais = () => {
+        Alert.alert('Zerar', 'Deseja zerar os pontos?', [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Zerar', onPress: () => { zerarPontosEspeciais() } }
+        ]);
+    }
+    const openAlertZerarPontos = () => {
+        Alert.alert('Zerar', 'Deseja zerar os pontos?', [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Zerar', onPress: () => { zerarPontos() } }
+        ]);
+    }
+    const openAlertSalvarBatalha = () => {
+        Alert.alert('Salvar', 'Salvar resultados no histórico?', [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Salvar', onPress: () => { salvarBatalha() } }
+        ]);
+    }
+
+    const openAlertBack = () => {
+        Alert.alert('Voltar', 'Deseja desafazer as alterações e voltar para a tela anterior?', [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Voltar', onPress: () => { zerarTudo() } }
+        ]);
+    }
 
     const closeModal = () => {
         setModalVisible(false);
+        zerarTudo()
     };
 
-    const navigation = useNavigation();
 
-
-
-
-    const criarBatalha = async () => {
-        setIsLoading(true);
-        // Simula uma operação assíncrona antes de navegar
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setIsLoading(false);
-        navigation.navigate("Inicio");
-    }
-
+    /*   const criarBatalha = async () => {
+          setIsLoading(true);
+          // Simula uma operação assíncrona antes de navegar
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          setIsLoading(false);
+          navigation.navigate("Inicio");
+      }
+   */
 
     const navigateHome = () => {
         setActiveButton('Home')
-        navigation.navigate('Home')
+        setIsLoading(true);
+        setTimeout(() => {
+            navigation.navigate('Home');
+        }, 100);
     }
 
     const navigateOpcoes = () => {
         setActiveButton('Opções')
-        navigation.navigate('Opcoes')
+        setIsLoading(true);
+        setTimeout(() => {
+            navigation.navigate('Opcoes');
+        }, 100);
     }
 
-    const saveData = async () => {
+    const corrigir1 = () => {
+        setPonto1(ponto1 - 0.25)
+        setPontoTotal1(pontoTotal1 - 0.25)
+    }
+    const corrigir2 = () => {
+        setPonto2(ponto2 - 0.25)
+        setPontoTotal2(pontoTotal2 - 0.25)
+    }
+
+    //Salvar rounds e batalha
+    const salvar = async () => {
+
         try {
-            if (selectedNumber == '2') {
+
+            if (selectedRound == '1') {
+                if (round == 1) {
+                    salvarRound()
+
+                } else {
+                    salvarBatalha()
+                }
+
+            } else if (selectedRound == '3') {
                 if (round < 2) {
-                    setRound(round + 1)
+                    salvarRound()
                 } else {
-                    setRound(0)
+                    salvarBatalha()
                 }
-            }
-            if (selectedNumber == '3') {
+            } else if (selectedRound == '4') {
                 if (round < 3) {
-                    setRound(round + 1)
+                    salvarRound()
                 } else {
-                    setRound(0)
+                    salvarBatalha()
                 }
-            }
-            if (selectedNumber == '4') {
+            } else if (selectedRound == '5') {
                 if (round < 4) {
-                    setRound(round + 1)
+                    salvarRound()
                 } else {
-                    setRound(0)
+                    salvarBatalha()
                 }
+            } else {
+                Alert.alert('Erro', 'Rounds disponíveis Não especificados')
             }
-            if (selectedNumber == '5') {
-                if (round < 5) {
-                    setRound(round + 1)
-                } else {
-                    setRound(0)
-                }
-            }
-            const existingData = await AsyncStorage.getItem('batalhas'); // Recupera a lista existente
-            const parsedData = existingData ? JSON.parse(existingData) : []; // Converte para array
-
-            // Gerar um ID único usando UUID
-            const id = UUID.v4(); // Gerando um UUID com react-native-uuid
-
-            const newBatalha = {
-                ponto1,
-                ponto2,
-                mc1,
-                mc2,
-                id,  // ID gerado
-                data,
-            };
-
-            const updatedData = [...parsedData, newBatalha]; // Adiciona o novo item à lista existente
-
-            await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData)); // Salva a lista atualizada
-            setBatalha(updatedData); // Atualiza o estado local
-            console.log('Dados salvos com sucesso!');
+        
         } catch (error) {
             console.error('Erro ao salvar os dados:', error);
         }
-    };
+    }
+    const salvarRound = () => {
+        if (mc1RoundsVencidos == 2 && selectedRound == '3') {
+            openAlertSalvarBatalha()
+        } else if (mc2RoundsVencidos == 2 && selectedRound == '3') {
+            openAlertSalvarBatalha()
+        } else if (mc1RoundsVencidos == 3 && selectedRound == '4') {
+            openAlertSalvarBatalha()
+        } else if (mc2RoundsVencidos == 3 && selectedRound == '4') {
+            openAlertSalvarBatalha()
+        } else if (mc1RoundsVencidos == 3 && selectedRound == '5') {
+            openAlertSalvarBatalha()
+        } else if (mc2RoundsVencidos == 3 && selectedRound == '5') {
+            salvarBatalha()
+        } else {
+            setPonto1(0)
+            setPonto2(0)
+            setPalco1(0)
+            setTecnica1(0)
+            setFlow1(0)
+            setPalco2(0)
+            setTecnica2(0)
+            setFlow2(0)
+            setbotoesEspeciais(false)
+            setRound(round + 1)
+        }
+
+    }
+
+    const salvarBatalha = async () => {
+        setPonto1(0)
+        setPonto2(0)
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+      
+
+        // Calcula os pontos extras baseados nos pontos especiais
+        const pontosExtrasMC1 = (flowTotal1 + palcoTotal1 + tecnicaTotal1) * 0.5;
+        const pontosExtrasMC2 = (flowTotal2 + palcoTotal2 + tecnicaTotal2) * 0.5;
+
+        // Adiciona os pontos extras à pontuação total
+        const pontuacaoFinalMC1 = pontoTotal1 + pontosExtrasMC1;
+        const pontuacaoFinalMC2 = pontoTotal2 + pontosExtrasMC2;
+
+        const existingData = await AsyncStorage.getItem('batalhas');
+        const parsedData = existingData ? JSON.parse(existingData) : [];
+
+        const id = UUID.v4();
+
+        const newBatalha = {
+            pontoTotal1: pontuacaoFinalMC1, // Usa a pontuação com os extras
+            pontoTotal2: pontuacaoFinalMC2, // Usa a pontuação com os extras
+            mc1,
+            mc2,
+            id,
+            data,
+            flowTotal1,
+            flowTotal2,
+            tecnicaTotal1,
+            tecnicaTotal2,
+            palcoTotal1,
+            palcoTotal2,
+            mc1RoundsVencidos,
+            mc2RoundsVencidos
+        };
+
+        const updatedData = [...parsedData, newBatalha];
+
+        await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData));
+        setBatalha(updatedData);
+
+        // Reseta todos os estados
+        setPontoTotal1(0)
+        setPontoTotal2(0)
+        setPalcoTotal1(0)
+        setPalcoTotal2(0)
+        setTecnicaTotal1(0)
+        setTecnicaTotal2(0)
+        setFlowTotal1(0)
+        setFlowTotal2(0)
+        setSelectedRound('3')
+        navigateHome()
+
+        setRound(0)
+        setMc1RoundsVencidos(0)
+        setMc2RoundsVencidos(0)
+    }
+
+
+
+    const zerarPontos = () => {
+        setPonto1(0)
+        setPonto2(0)
+        setPontoTotal1(pontoTotal1 - ponto1)
+        setPontoTotal2(pontoTotal2 - ponto2)
+    }
+
+    const zerarPontosEspeciais = () => {
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+        setPalcoTotal1(palcoTotal1 - palco1)
+        setPalcoTotal2(palcoTotal2 - palco2)
+        setTecnicaTotal1(tecnicaTotal1 - tecnica1)
+        setTecnicaTotal2(tecnicaTotal2 - tecnica2)
+        setFlowTotal1(flowTotal1 - flow1)
+        setFlowTotal2(flowTotal2 - flow2)
+    }
+
+    const zerarTudo = () => {
+        setModalVisible(false)
+        setPonto1(0)
+        setPonto2(0)
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+        setPontoTotal1(0)
+        setPontoTotal2(0)
+        setPalcoTotal1(0)
+        setPalcoTotal2(0)
+        setTecnicaTotal1(0)
+        setTecnicaTotal2(0)
+        setFlowTotal1(0)
+        setFlowTotal2(0)
+        setRound(0)
+        setSelectedRound('3')
+        setMc1('')
+        setMc2('')
+    }
+
+    const addPonto1 = (p) => {
+        const novaPontuacao = ponto1 + p;
+        const novaPontuacaoTotal = pontoTotal1 + p;
+
+        if (novaPontuacao <= 100) {
+            setPonto1(novaPontuacao);
+            setPontoTotal1(novaPontuacaoTotal);
+        }
+    }
+    const addPonto2 = (p) => {
+        const novaPontuacao = ponto2 + p;
+        const novaPontuacaoTotal = pontoTotal2 + p;
+        if (novaPontuacao <= 100) {
+            setPonto2(novaPontuacao);
+            setPontoTotal2(novaPontuacaoTotal);
+        }
+    }
+
+
+
+    const addPalco1 = () => {
+        if (palco1 < 4) {
+            setPalco1(palco1 + 1)
+            setPalcoTotal1(palcoTotal1 + 1)
+        }
+    }
+    const addPalco2 = () => {
+        if (palco2 < 4) {
+            setPalco2(palco2 + 1)
+            setPalcoTotal2(palcoTotal2 + 1)
+        }
+    }
+
+    const addTecnica1 = () => {
+        if (tecnica1 < 4) {
+            setTecnica1(tecnica1 + 1)
+            setTecnicaTotal1(tecnicaTotal1 + 1)
+        }
+    }
+
+    const addTecnica2 = () => {
+        if (tecnica2 < 4) {
+            setTecnica2(tecnica2 + 1)
+            setTecnicaTotal2(tecnicaTotal2 + 1)
+        }
+    }
+
+    const addFlow1 = () => {
+        if (flow1 < 4) {
+            setFlow1(flow1 + 1)
+            setFlowTotal1(flowTotal1 + 1)
+        }
+    }
+
+    const addFlow2 = () => {
+        if (flow2 < 4) {
+            setFlow2(flow2 + 1)
+            setFlowTotal2(flowTotal2 + 1)
+        }
+    }
+
 
 
     let p1 = 0.25
@@ -179,8 +460,97 @@ export default function Opcoes() {
     return (
 
         <View style={styles.container}>
+            {isLoading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#ffffff" />
+                </View>
+            ) : (
+                <View style={styles.main}>
+                    <View style={styles.parte1}>
+                        <Text style={styles.textMain}>Adicionar Batalha</Text>
+                        <Text style={styles.text}>Preencha as informações necessárias</Text>
+                    </View>
+                    <View style={styles.parte2}>
+
+                        <View style={styles.inputContainer}>
+                            <TextInput
+
+                                style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+                                placeholder="Mc 1"
+                                placeholderTextColor="#A0A0A0"
+                                onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
+                                onBlur={() => setIsFocused(false)} // Restaura a borda quando 
+                                // perde o foco
+                                onChangeText={(text) => setMc1(text)}
+                                maxLength={11} // Adicione esta linha
+
+
+                            />
+                            <TouchableOpacity>
+                                <Image
+                                    source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
+                                    style={styles.inputIcon}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+
+                                style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+                                placeholder="Mc 2"
+                                placeholderTextColor="#A0A0A0"
+                                onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
+                                onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+                                onChangeText={(text) => setMc2(text)}
+                                maxLength={11} // Adicione esta linha
+
+                            />
+                            <TouchableOpacity>
+                                <Image
+                                    source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
+                                    style={styles.inputIcon}
+                                />
+                            </TouchableOpacity>
+
+
+
+
+                        </View>
+                        <Text style={styles.label}>Número de rounds:</Text>
+                        <View style={styles.inputPickerContainer}>
+
+                            <Picker
+                                selectedValue={selectedRound} // Valor atual
+                                onValueChange={(itemValue) => setSelectedRound(itemValue)} // Atualiza o estado ao selecionar
+                                style={styles.picker}
+                            >
+                                <Picker.Item label="1 Rounds" value="1" />
+                                <Picker.Item label="3 Rounds" value="3" />
+                                <Picker.Item label="4 Rounds" value="4" />
+                                <Picker.Item label="5 Rounds" value="5" />
+                            </Picker>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.BtnContainer}
+                            onPress={openAlertConfirmar}
+                            disabled={isLoading} // Desativa o botão enquanto carrega
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator size="small" color="#FFF" />
+                            ) : (
+                                <>
+
+                                    <Text style={styles.BtnText}>Adicionar</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+            {/*Modal Batalha */}
             <Modal
-                visible={modalVisible}
+                visible={modalVisible && !isLoading}
                 transparent={true}
                 onRequestClose={closeModal}
             >
@@ -188,13 +558,13 @@ export default function Opcoes() {
                     <View style={stylesModalBatalha.modalContent}>
 
                         <View style={stylesModalBatalha.header}>
-                            <TouchableOpacity style={stylesModalBatalha.back} onPress={closeModal}>
+                            <TouchableOpacity style={stylesModalBatalha.back} onPress={openAlertBack}>
                                 <Image
                                     source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
                                     style={stylesModalBatalha.img}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity style={stylesModalBatalha.btnZerar}>
+                            <TouchableOpacity style={stylesModalBatalha.btnZerar} onPress={openAlertZerarPontos}>
                                 <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={stylesModalBatalha.helpContainer}>
@@ -244,193 +614,107 @@ export default function Opcoes() {
 
                             <View style={stylesModalBatalha.coll}>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c1
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p1)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p1}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c1
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p2)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p2}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c2
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p3)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p3}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c2
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p4)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p4}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c3
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p5)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p5}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c3
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p6)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p6}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c4
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p7)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p7}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c4
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p8)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p8}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c5
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p9)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p9}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c5
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p10)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p10}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c6
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p11)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p11}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c6
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p12)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p12}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c7
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p13)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p13}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c7
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p14)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p14}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c8
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p15)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p15}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c8
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p16)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p16}</Text>
                                     </TouchableOpacity>
                                 </View>
-                                <View style={stylesModalBatalha.row}>
 
-                                    <TouchableOpacity style={stylesModalBatalha.especial}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>Especial</Text>
-                                    </TouchableOpacity>
-
-                                </View>
 
                                 <View style={stylesModalBatalha.row}>
 
-                                    <TouchableOpacity style={stylesModalBatalha.correcao}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>Correção</Text>
+                                    <TouchableOpacity onPress={corrigir1} style={stylesModalBatalha.correcao}>
+                                        <Text style={stylesModalBatalha.textBtnPonto}>Corrigir</Text>
                                     </TouchableOpacity>
 
                                 </View>
@@ -442,193 +726,107 @@ export default function Opcoes() {
 
                             <View style={stylesModalBatalha.coll}>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c1
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p1)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p1}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c1
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p2)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p2}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c2
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p3)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p3}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c2
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p4)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p4}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c3
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p5)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p5}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c3
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p6)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p6}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c4
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p7)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p7}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c4
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p8)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p8}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c5
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p9)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p9}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c5
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p10)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p10}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c6
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p11)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p11}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c6
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p12)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p12}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c7
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p13)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p13}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c7
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p14)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p14}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c8
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p15)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p15}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{
-                                        width: '45%',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        borderRadius: 6,
+                                    <TouchableOpacity style={[{
                                         backgroundColor: c8
-                                    }}>
+                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p16)}>
                                         <Text style={stylesModalBatalha.textBtnPonto}>{p16}</Text>
                                     </TouchableOpacity>
                                 </View>
-                                <View style={stylesModalBatalha.row}>
 
-                                    <TouchableOpacity style={stylesModalBatalha.especial}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>Especial</Text>
-                                    </TouchableOpacity>
-
-                                </View>
 
                                 <View style={stylesModalBatalha.row}>
 
-                                    <TouchableOpacity style={stylesModalBatalha.correcao}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>Correção</Text>
+                                    <TouchableOpacity onPress={corrigir2} style={stylesModalBatalha.correcao}>
+                                        <Text style={stylesModalBatalha.textBtnPonto}>Corrigir</Text>
                                     </TouchableOpacity>
 
                                 </View>
@@ -638,17 +836,11 @@ export default function Opcoes() {
 
                         <TouchableOpacity
                             style={stylesModalBatalha.BtnContainer}
-                            onPress={saveData}
+                            onPress={openModalEspecial}
                             disabled={isLoading} // Desativa o botão enquanto carrega
                         >
-                            {isLoading ? (
-                                <ActivityIndicator size="small" color="#FFF" />
-                            ) : (
-                                <>
+                            <Text style={stylesModalBatalha.BtnText}>Flow - Tecnica - Palco</Text>
 
-                                    <Text style={stylesModalBatalha.BtnText}>Salvar {round}/{selectedNumber}</Text>
-                                </>
-                            )}
                         </TouchableOpacity>
 
 
@@ -658,134 +850,145 @@ export default function Opcoes() {
             </Modal>
 
 
+
+            {/*Modal Botões Especiais */}
             <Modal
                 transparent={true} // Torna o fundo transparente
-                visible={modalVisible2}
+                visible={botoesEspeciais && !isLoading}
                 animationType="fade" // Tipo de animação ao abrir o modal
-                onRequestClose={() => setModalVisible2(false)} // Fechar o modal ao clicar fora
+                onRequestClose={closeModalEspecial} // Fechar o modal ao clicar fora
             >
-                <View style={styles.modalAvisoOverlay}>
-                    <View style={styles.modalAvisoContainer}>
-                        <Text style={styles.modalAvisoTitle}>Confirmar informações?</Text>
-                        <Text style={styles.modalAvisoMessage}>Ao clicar 'Sim' Você será redirecionado a tela de pontuação</Text>
-                        <TouchableOpacity
-                            style={styles.BtnAvisoContainer1}
-                            onPress={openModalBatalha}
-                            disabled={isLoading} // Desativa o botão enquanto carrega
+                <View style={stylesModalEspecial.modalEspecialOverlay}>
+                    <View style={stylesModalEspecial.modalEspecialContainer}>
+                        <View style={stylesModalBatalha.header}>
+                            <TouchableOpacity style={stylesModalBatalha.back} onPress={closeModalEspecial}>
+                                <Image
+                                    source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
+                                    style={stylesModalBatalha.img}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={stylesModalBatalha.btnZerar}
+                                onPress={openAlertZerarEspeciais}>
+                                <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={stylesModalBatalha.helpContainer}>
+                                <Text style={stylesModalBatalha.help}>?</Text>
+                            </TouchableOpacity>
 
+
+                        </View>
+
+                        <View style={stylesModalBatalha.main}>
+
+                            <View style={stylesModalBatalha.nomes}>
+
+                                <View style={stylesModalBatalha.nome}>
+                                    <Text style={stylesModalBatalha.textNome}>{mc1}</Text>
+                                </View>
+
+                                <View style={stylesModalBatalha.separadorContainer}>
+                                    <Text style={stylesModalBatalha.separador}></Text>
+                                </View>
+
+                                <View style={stylesModalBatalha.nome}>
+                                    <Text style={stylesModalBatalha.textNome}>{mc2}</Text>
+                                </View>
+
+                            </View>
+
+                            <View style={stylesModalBatalha.pontos}>
+
+                                <View style={stylesModalBatalha.ponto}>
+                                    <Text style={stylesModalBatalha.textPonto}>{ponto1}</Text>
+                                </View>
+
+                                <View style={stylesModalBatalha.separadorContainer}>
+                                    <Text style={stylesModalBatalha.separador}>|</Text>
+                                </View>
+
+                                <View style={stylesModalBatalha.ponto}>
+                                    <Text style={stylesModalBatalha.textPonto}>{ponto2}</Text>
+                                </View>
+
+                            </View>
+
+                        </View>
+
+                        <View style={stylesModalBatalha.btnsPonto}>
+
+                            <View style={stylesModalEspecial.coll}>
+                                <View style={stylesModalEspecial.row}>
+
+                                    <TouchableOpacity onPress={addPalco1} style={stylesModalEspecial.especial}>
+                                        <Text style={stylesModalEspecial.textBtnEspecial}>Palco</Text>
+                                    </TouchableOpacity>
+                                    <Text style={stylesModalEspecial.textEspecial}>{palco1}</Text>
+                                </View>
+                                <View style={stylesModalEspecial.row}>
+
+                                    <TouchableOpacity onPress={addTecnica1} style={stylesModalEspecial.especial}>
+                                        <Text style={stylesModalEspecial.textBtnEspecial}>Técnica</Text>
+                                    </TouchableOpacity>
+                                    <Text style={stylesModalEspecial.textEspecial}>{tecnica1}</Text>
+                                </View>
+                                <View style={stylesModalEspecial.row}>
+
+                                    <TouchableOpacity onPress={addFlow1} style={stylesModalEspecial.especial}>
+                                        <Text style={stylesModalEspecial.textBtnEspecial}>Flow</Text>
+                                    </TouchableOpacity>
+                                    <Text style={stylesModalEspecial.textEspecial}>{flow1}</Text>
+                                </View>
+                            </View>
+                            <View style={stylesModalEspecial.separadorContainer}>
+                                <Text style={stylesModalBatalha.separador}></Text>
+                            </View>
+                            <View style={stylesModalEspecial.coll}>
+                                <View style={stylesModalEspecial.row}>
+
+                                    <TouchableOpacity onPress={addPalco2} style={stylesModalEspecial.especial}>
+                                        <Text style={stylesModalEspecial.textBtnEspecial}>Palco</Text>
+                                    </TouchableOpacity>
+                                    <Text style={stylesModalEspecial.textEspecial}>{palco2}</Text>
+                                </View>
+                                <View style={stylesModalEspecial.row}>
+
+                                    <TouchableOpacity onPress={addTecnica2} style={stylesModalEspecial.especial}>
+                                        <Text style={stylesModalEspecial.textBtnEspecial}>Técnica</Text>
+                                    </TouchableOpacity>
+                                    <Text style={stylesModalEspecial.textEspecial}>{tecnica2}</Text>
+                                </View>
+                                <View style={stylesModalEspecial.row}>
+
+                                    <TouchableOpacity onPress={addFlow2} style={stylesModalEspecial.especial}>
+                                        <Text style={stylesModalEspecial.textBtnEspecial}>Flow</Text>
+                                    </TouchableOpacity>
+                                    <Text style={stylesModalEspecial.textEspecial}>{flow2}</Text>
+                                </View>
+                            </View>
+
+                        </View>
+
+                        <TouchableOpacity
+                            style={stylesModalBatalha.BtnContainer}
+                            onPress={salvar}
+                            disabled={isLoading} // Desativa o botão enquanto carrega
                         >
                             {isLoading ? (
                                 <ActivityIndicator size="small" color="#FFF" />
                             ) : (
                                 <>
 
-                                    <Text style={styles.BtnText}>Sim</Text>
+                                    <Text style={stylesModalBatalha.BtnText}>Salvar Round {round + 1}/{selectedRound}</Text>
                                 </>
                             )}
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.BtnAvisoContainer2}
-                            onPress={() => { setModalVisible2(false) }}
-                            disabled={isLoading} // Desativa o botão enquanto carrega
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator size="small" color="#FFF" />
-                            ) : (
-                                <>
 
-                                    <Text style={styles.BtnAvisoText}>Não</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
+
+
                     </View>
                 </View>
             </Modal>
-
-
-            <View style={styles.main}>
-
-
-
-                <View style={styles.parte1}>
-                    <Text style={styles.textMain}>Adicionar Batalha</Text>
-                    <Text style={styles.text}>Preencha as informações necessárias</Text>
-                </View>
-                <View style={styles.parte2}>
-
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            autoCapitalize="none"
-                            style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
-                            placeholder="Mc 1"
-                            placeholderTextColor="#A0A0A0"
-                            onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-                            onBlur={() => setIsFocused(false)} // Restaura a borda quando 
-                            // perde o foco
-                            onChangeText={(text) => setMc1(text)}
-
-
-                        />
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
-                                style={styles.inputIcon}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            autoCapitalize="none"
-                            style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
-                            placeholder="Mc 2"
-                            placeholderTextColor="#A0A0A0"
-                            onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-                            onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
-                            onChangeText={(text) => setMc2(text)}
-
-                        />
-                        <TouchableOpacity>
-                            <Image
-                                source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
-                                style={styles.inputIcon}
-                            />
-                        </TouchableOpacity>
-
-
-
-
-                    </View>
-                    <Text style={styles.label}>Número de rounds:</Text>
-                    <View style={styles.inputPickerContainer}>
-
-                        <Picker
-                            selectedValue={selectedNumber} // Valor atual
-                            onValueChange={(itemValue) => setSelectedNumber(itemValue)} // Atualiza o estado ao selecionar
-                            style={styles.picker}
-                        >
-                            <Picker.Item label="2 Rounds" value="2" />
-                            <Picker.Item label="3 Rounds" value="3" />
-                            <Picker.Item label="4 Rounds" value="4" />
-                            <Picker.Item label="5 Rounds" value="5" />
-                        </Picker>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.BtnContainer}
-                        onPress={openModalConfirmar}
-                        disabled={isLoading} // Desativa o botão enquanto carrega
-                    >
-                        {isLoading ? (
-                            <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                            <>
-
-                                <Text style={styles.BtnText}>Adicionar</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-
-            </View>
 
 
             <View style={styles.footer}>
@@ -795,6 +998,7 @@ export default function Opcoes() {
                         activeButton === 'Home' && styles.navItemActive,
                     ]}
                     onPress={navigateHome}
+                    disabled={isLoading}
                 >
                     <Image
                         source={require('../assets/icons/home.png')} // Substitua pelo caminho da sua imagem
@@ -819,6 +1023,7 @@ export default function Opcoes() {
                         activeButton === 'Adicionar Batalha' && styles.navItemActive,
                     ]}
                     onPress={() => setActiveButton('Adicionar Batalha')}
+                    disabled={isLoading}
                 >
                     <Image
                         source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem
@@ -843,6 +1048,7 @@ export default function Opcoes() {
                         activeButton === 'Opções' && styles.navItemActive,
                     ]}
                     onPress={navigateOpcoes}
+                    disabled={isLoading}
                 >
                     <Image
                         source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
@@ -868,6 +1074,119 @@ export default function Opcoes() {
     );
 }
 
+const stylesModalEspecial = StyleSheet.create({
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#190a29', // Fundo semitransparente para o modal
+
+    },
+    modalContent: {
+        width: '100%', // Modal ocupa toda a largura da tela
+        height: '100%', // Modal ocupa toda a altura da tela
+        backgroundColor: '#190a29',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    BtnContainer: {
+        // Garante que o gradiente não ultrapasse as bordas arredondadas
+        width: '100%',
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        display: 'inline-flex',
+        paddingRight: 30,
+        paddingLeft: 30,
+        overflow: 'hidden',
+        marginTop: 20,
+
+        backgroundColor: '#704BFF',
+        flexDirection: "row", // Coloca a imagem e o TextInput lado a lado
+        borderRadius: 6,
+    },
+    BtnText: {
+        color: '#ffffff',
+        fontSize: 16, // Tamanho da fonte
+    },
+    btnIcon: {
+        width: 15, // Largura da imagem
+        height: 15, // Altura da imagem
+        marginRight: 8, // Espaço entre a imagem e o campo de entrada
+    },
+
+
+    modalEspecialOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#190a29', // Fundo semitransparente
+    },
+    modalEspecialContainer: {
+        width: '86%',
+        backgroundColor: '#190a29',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalEspecialTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    modalEspecialMessage: {
+        fontSize: 14,
+        marginBottom: 20,
+    },
+    BtnsEspecialContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 25,
+        height: 420
+    },
+    BtnEspecialContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 25,
+    },
+    coll: {
+        width: '46%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    row: {
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        paddingVertical: 7
+    },
+    textBtnEspecial: {
+        color: '#ffffff',
+        textAlign: 'center',
+        fontWeight: 'bold'
+    },
+    especial: {
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 39,
+        borderRadius: 6,
+        backgroundColor: '#422b73'
+    },
+    textEspecial: {
+        color: '#ffffff',
+        textAlign: 'center',
+        fontSize: 27,
+    },
+    separadorContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+        width: '8%',
+    },
+})
+
 
 const stylesModalBatalha = StyleSheet.create({
     modalContainer: {
@@ -892,7 +1211,7 @@ const stylesModalBatalha = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20
+        marginBottom: 40
     },
     back: {
         width: 30,
@@ -975,7 +1294,7 @@ const stylesModalBatalha = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        height: 60,
+        height: '100%',
         marginVertical: 5
     },
     ponto: {
@@ -1008,7 +1327,7 @@ const stylesModalBatalha = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         height: 372,
-        marginTop: 130,
+        marginTop: 100,
         marginBottom: 25
     },
     coll: {
@@ -1043,9 +1362,17 @@ const stylesModalBatalha = StyleSheet.create({
         height: 36,
         borderRadius: 6,
         backgroundColor: '#422b73'
+    },
+    rowBtn: {
+        width: '45%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 36,
+        borderRadius: 6,
     }
 
 })
+
 
 const styles = StyleSheet.create({
     container: {
@@ -1056,8 +1383,9 @@ const styles = StyleSheet.create({
     main: {
         paddingTop: 55,
         paddingRight: 43,
-        paddingBottom: 45,
         paddingLeft: 43,
+        paddingBottom: 45,
+
         height: '90%'
     },
     parte1: {
@@ -1152,6 +1480,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingRight: 53,
         paddingLeft: 53,
+        zIndex: 1000
     },
     navItem: {
         marginRight: '5%',
@@ -1183,20 +1512,6 @@ const styles = StyleSheet.create({
     navIconActive: {
         tintColor: '#000000', // Torna o ícone preto quando ativo
     },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#190a29', // Fundo semitransparente para o modal
-    },
-    modalContent: {
-        width: '100%', // Modal ocupa toda a largura da tela
-        height: '100%', // Modal ocupa toda a altura da tela
-        backgroundColor: '#190a29',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
     BtnContainer: {
         // Garante que o gradiente não ultrapasse as bordas arredondadas
         width: '100%',
@@ -1217,69 +1532,13 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 16, // Tamanho da fonte
     },
-    btnIcon: {
-        width: 15, // Largura da imagem
-        height: 15, // Altura da imagem
-        marginRight: 8, // Espaço entre a imagem e o campo de entrada
-    },
-    modalAvisoOverlay: {
+
+    loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo semitransparente
+        backgroundColor: '#190a29',
+        height: '90%' // Mesmo height do main
     },
-    modalAvisoContainer: {
-        width: '86%',
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-
-    },
-    modalAvisoTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    modalAvisoMessage: {
-        fontSize: 14,
-        marginBottom: 20,
-    },
-    BtnAvisoContainer1: {
-        width: '100%',
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'inline-flex',
-        paddingRight: 30,
-        paddingLeft: 30,
-        overflow: 'hidden',
-        marginTop: 20,
-
-        backgroundColor: '#704BFF',
-        flexDirection: "row", // Coloca a imagem e o TextInput lado a lado
-        borderRadius: 6,
-    },
-    BtnAvisoContainer2: {
-        width: '100%',
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'inline-flex',
-        paddingRight: 30,
-        paddingLeft: 30,
-        overflow: 'hidden',
-        marginTop: 10,
-        borderColor: '#704BFF',
-        borderWidth: 2,
-        backgroundColor: '#ffffff',
-        flexDirection: "row", // Coloca a imagem e o TextInput lado a lado
-        borderRadius: 6,
-    },
-    BtnAvisoText: {
-        color: '#704BFF',
-        fontSize: 16, // 
-
-    }
-
 });
 

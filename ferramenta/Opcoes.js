@@ -1,112 +1,164 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, FlatList } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, ActivityIndicator, Linking } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
-import { auth, db } from '../firebase/index'
-import { ref, get, child } from "firebase/database";
-import { signOut } from "firebase/auth";
-import Historico from './Historico'
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { auth } from '../firebase/index';
 
 export default function Opcoes() {
     const [activeButton, setActiveButton] = useState('Opções');
-    const [isLoading, setIsLoading] = useState(false);
-    const [savedData, setSavedData] = useState({ ponto1: '', ponto2: '', id: '', mc1: '', mc2: '', data: '' });
-
-
-    const [userName, setUserName] = useState("Opções");
+    const [isLoading, setIsLoading] = useState(true);
     const navigation = useNavigation();
 
     const [fontsLoaded] = useFonts({
-        Montserrat_400Regular, // Regular (normal weight)
-        Montserrat_700Bold, // Bold weight
+        Montserrat_400Regular,
+        Montserrat_700Bold,
         'BlowBrush': require('../assets/fonts/blowbrush.ttf'),
         'Ringstun': require("../assets/fonts/ringstun.ttf"),
     });
 
-    // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('beforeRemove', () => {
+            setIsLoading(false);
+        });
+
+        return unsubscribe;
+    }, [navigation]);
+
+    // Efeito para o carregamento inicial
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 50);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     if (!fontsLoaded) {
         return <Text>Carregando...</Text>;
     }
 
-    const criarBatalha = async () => {
-        setIsLoading(true);
-        // Simula uma operação assíncrona antes de navegar
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setIsLoading(false);
-        navigation.navigate("Inicio");
-    }
-
-
     const navigateHome = () => {
-        setActiveButton('Home')
-        navigation.navigate('Home')
+        setActiveButton('Home');
+        setIsLoading(true);
+        setTimeout(() => {
+            navigation.navigate('Home');
+        }, 100);
     }
 
-
+    const navigateBatalha = () => {
+        setActiveButton('Adicionar Batalha');
+        setIsLoading(true);
+        setTimeout(() => {
+            navigation.navigate('Batalha');
+        }, 100);
+    }
 
     const handleLogout = async () => {
         try {
-            // Deslogar o usuário utilizando o Firebase
             await auth.signOut();
-
-            // Remover credenciais do AsyncStorage para desativar login automático
-            /*  await AsyncStorage.removeItem("email");
-             await AsyncStorage.removeItem("password"); */
-
-            // Redefine a navegação e envia o usuário para a tela de Login
             navigation.reset({
                 index: 0,
                 routes: [{ name: "Inicio" }],
             });
-
             Alert.alert("Você foi deslogado");
         } catch (error) {
             Alert.alert(error);
         }
     };
 
+    const abrirPrivacidade = async () => {
+        try {
+            const url = 'http://politicaprivacidadesjurados.infinityfreeapp.com/?i=1';
+            const supported = await Linking.canOpenURL(url);
+            
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                Alert.alert("Erro", "Não foi possível abrir o link da política de privacidade");
+            }
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível abrir o link da política de privacidade");
+        }
+    };
 
-    const navigateBatalha = () => {
-        setActiveButton('Adicionar Batalha')
-        navigation.navigate('Batalha')
-    }
+    const abrirContato = async () => {
+        try {
+            const email = 'royalx481@gmail.com';
+            const url = `mailto:${email}`;
+            
+            const supported = await Linking.canOpenURL(url);
+            
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                Alert.alert("Erro", "Não foi possível abrir o aplicativo de email");
+            }
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível abrir o aplicativo de email");
+        }
+    };
 
     return (
-
         <View style={styles.container}>
-            <View style={styles.main}>
-
-                <View style={styles.parte2}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={handleLogout}
-                        disabled={isLoading} // Desativa o botão enquanto carrega
-                    >
-                        <LinearGradient
-                            colors={['#842ED8', '#DB28A9', '#9D1DCA']} // Cores do gradiente
-                            start={{ x: 0, y: 0 }} // Início do gradiente
-                            end={{ x: 1, y: 1 }} // Fim do gradiente
-                            style={[StyleSheet.absoluteFill, { borderRadius: 8 }]} // Faz o gradiente preencher o botão com bordas arredondadas
-                        />
-                        {isLoading ? (
-
-                            <ActivityIndicator size="small" color="#FFF" />
-
-                        ) : (
-
-                            <Text style={styles.textBtn}>Sair</Text>
-                        )}
-
-
-                    </TouchableOpacity>
+            {isLoading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#ffffff" />
                 </View>
+            ) : (
+                <View style={styles.main}>
+                    <View style={styles.header}>
+                        <Text style={styles.textMain}>Opções</Text>
+                        <Text style={styles.text}>Gerencie sua conta e preferências</Text>
+                    </View>
 
+                    <View style={styles.parte2}>
+                    <TouchableOpacity
+                            style={[styles.button, isLoading && styles.buttonDisabled]}
+                            onPress={abrirPrivacidade}
+                            disabled={isLoading}
+                        >
+                            <View style={styles.buttonContent}>
+                                <Image
+                                    source={require('../assets/icons/privacidade.png')}
+                                    style={styles.buttonIcon}
+                                />
+                                <Text style={styles.textBtn}>Política de Privacidade</Text>
+                            </View>
+                        </TouchableOpacity>
 
-            </View>
+                        <TouchableOpacity
+                            style={[styles.button, isLoading && styles.buttonDisabled]}
+                            onPress={abrirContato}
+                            disabled={isLoading}
+                        >
+                            <View style={styles.buttonContent}>
+                                <Image
+                                    source={require('../assets/icons/suporte.png')}
+                                    style={styles.buttonIcon}
+                                />
+                                <Text style={styles.textBtn}>Suporte</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        
+                        <TouchableOpacity
+                            style={[styles.button, isLoading && styles.buttonDisabled]}
+                            onPress={handleLogout}
+                            disabled={isLoading}
+                        >
+                            <View style={styles.buttonContent}>
+                                <Image
+                                    source={require('../assets/icons/sair.png')}
+                                    style={styles.buttonIcon}
+                                />
+                                <Text style={styles.textBtn}>Sair</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
 
             <View style={styles.footer}>
                 <TouchableOpacity
@@ -115,9 +167,10 @@ export default function Opcoes() {
                         activeButton === 'Home' && styles.navItemActive,
                     ]}
                     onPress={navigateHome}
+                    disabled={isLoading}
                 >
                     <Image
-                        source={require('../assets/icons/home.png')} // Substitua pelo caminho da sua imagem
+                        source={require('../assets/icons/home.png')}
                         style={[
                             styles.navIcon,
                             activeButton === 'Home' && styles.navIconActive,
@@ -139,9 +192,10 @@ export default function Opcoes() {
                         activeButton === 'Adicionar Batalha' && styles.navItemActive,
                     ]}
                     onPress={navigateBatalha}
+                    disabled={isLoading}
                 >
                     <Image
-                        source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem
+                        source={require('../assets/icons/add.png')}
                         style={[
                             styles.navIcon,
                             activeButton === 'Adicionar Batalha' && styles.navIconActive,
@@ -163,9 +217,10 @@ export default function Opcoes() {
                         activeButton === 'Opções' && styles.navItemActive,
                     ]}
                     onPress={() => { setActiveButton('Opções') }}
+                    disabled={isLoading}
                 >
                     <Image
-                        source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
+                        source={require('../assets/icons/options.png')}
                         style={[
                             styles.navIcon,
                             activeButton === 'Opções' && styles.navIconActive,
@@ -181,7 +236,6 @@ export default function Opcoes() {
                     </Text>
                 </TouchableOpacity>
             </View>
-
         </View>
     );
 }
@@ -220,11 +274,11 @@ const styles = StyleSheet.create({
     },
     parte2: {
         alignItems: 'center',
-        paddingTop: '40%'
+        paddingTop: '20%',
+        gap: 45,
     },
     button: {
-        // Garante que o gradiente não ultrapasse as bordas arredondadas
-        width: 285,
+        width: '100%',
         height: 45,
         justifyContent: 'center',
         alignItems: 'center',
@@ -232,16 +286,17 @@ const styles = StyleSheet.create({
         paddingRight: 20,
         paddingLeft: 20,
         borderRadius: 8,
-        overflow: 'hidden',
-        marginBottom: 20,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        backgroundColor: 'transparent',
     },
     textBtn: {
-        color: '#FFF', // Cor branca
-        textAlign: 'center', // Alinhamento centralizado
+        color: '#FFF',
+        textAlign: 'center',
         fontFamily: 'Montserrat_700Bold',
-        fontSize: 16, // Tamanho da fonte
-        fontStyle: 'normal', // Estilo da fonte
-        fontWeight: '700', // Peso da fonte
+        fontSize: 16,
+        fontStyle: 'normal',
+        fontWeight: '700',
     },
     gradient: {
         flex: 1, // Preenche todo o botão
@@ -289,6 +344,31 @@ const styles = StyleSheet.create({
     navIconActive: {
         tintColor: '#000000', // Torna o ícone preto quando ativo
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#190a29',
+        height: '90%'
+    },
+    buttonDisabled: {
+        opacity: 0.5,
+    },
+    header: {
+        marginBottom: 20,
+        alignItems: 'flex-start',
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 
+    buttonIcon: {
+        width: 20,
+        height: 20,
+        marginRight: 10,
+        tintColor: '#FFFFFF'
+    },
 });
 
