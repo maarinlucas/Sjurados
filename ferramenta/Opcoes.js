@@ -82,22 +82,30 @@ export default function Opcoes() {
         }
     };
 
-    const abrirContato = async () => {
-        try {
-            const email = 'royalx481@gmail.com';
-            const url = `mailto:${email}`;
-            
-            const supported = await Linking.canOpenURL(url);
-            
-            if (supported) {
-                await Linking.openURL(url);
-            } else {
-                Alert.alert("Erro", "Não foi possível abrir o aplicativo de email");
-            }
-        } catch (error) {
-            Alert.alert("Erro", "Não foi possível abrir o aplicativo de email");
+ const abrirContato = async () => {
+    try {
+        const email = 'royalx481@gmail.com';
+        const url = `mailto:${email}`;
+
+        // Verificar se o dispositivo suporta o esquema mailto
+        const supported = await Linking.canOpenURL(url);
+
+        if (supported) {
+            await Linking.openURL(url); // Abre o aplicativo de e-mail
+        } else {
+            Alert.alert(
+                'Erro',
+                'Nenhum aplicativo de email está configurado ou disponível neste dispositivo.'
+            );
         }
-    };
+    } catch (error) {
+        Alert.alert(
+            'Erro',
+            `Ocorreu um problema ao tentar abrir o email: ${error.message}`
+        );
+        console.error('Erro ao abrir email:', error);
+    }
+};
 
     return (
         <View style={styles.container}>

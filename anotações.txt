@@ -1,10 +1,10 @@
-cd C:\Users\lucas\Desktop\s_jurados
+cd C:\Users\lucas\Desktop\s_jurados 
 
 npx eas-cli login
 npx eas-cli build -p android --profile preview
 npx eas-cli build -p android --profile production
 
-
+npx expo prebuild
 
 npx expo build:android
 
@@ -15,3 +15,5 @@ git commit -m "first commit"
 git branch -M main
 git remote add origin https://github.com/maarinlucas/Sjurados.git
 git push -u origin main
+
+
