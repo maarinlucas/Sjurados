@@ -123,6 +123,7 @@ export default function Historico({ data, onDelete }) {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
+        
       >
         <View style={styles.modalContainer}>
 
@@ -448,7 +449,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-around'
   },
   mcImageSection: {
     alignItems: 'center',
@@ -460,8 +461,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   imageContainer: {
-    width: 85,
-    height: 85,
+    width: 100,
+    height: 100,
   },
   battleImage: {
     width: '100%',
@@ -487,12 +488,13 @@ const styles = StyleSheet.create({
     width: '100%',
     rowGap: 6,
     justifyContent: 'center',
+    
   },
   criterioContainer: {
     width: '100%',
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     gap: 10,
   },
   criterioText: {
@@ -531,13 +533,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginTop: 20,
-    paddingHorizontal: 20,
+
   },
   button: {
     paddingVertical: 10,
     paddingHorizontal: 30,
-    borderRadius: 8,
-    minWidth: 120,
+    borderRadius: 6,
+    minWidth: 135,
     alignItems: 'center',
   },
   buttonText: {
@@ -547,3 +549,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

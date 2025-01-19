@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Modal, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Modal, TextInput, Alert, ScrollView } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
@@ -16,9 +16,16 @@ import UUID from 'react-native-uuid';
 export default function Batalha() {
     const [activeButton, setActiveButton] = useState('Adicionar Batalha');
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoading2, setIsLoading2] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [botoesEspeciais, setbotoesEspeciais] = useState(false);
+    const [ajuda, setAjuda] = useState(false);
+    const [data, setData] = useState(new Date().toLocaleDateString());
+
+    const handleOpenModalAjuda = () => setAjuda(true);
+    const handleCloseModalAjuda = () => setAjuda(false);
+
 
     useEffect(() => {
         setTimeout(() => {
@@ -29,7 +36,6 @@ export default function Batalha() {
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
         Montserrat_700Bold, // Bold weight
-        'BlowBrush': require('../assets/fonts/blowbrush.ttf'),
         'Ringstun': require("../assets/fonts/ringstun.ttf"),
     });
 
@@ -46,7 +52,6 @@ export default function Batalha() {
     const [tecnica2, setTecnica2] = useState(0)
     const [flow2, setFlow2] = useState(0)
     const [round, setRound] = useState(0);
-    const [data, setData] = useState('19/01/1999')
     const [selectedRound, setSelectedRound] = useState("3");
 
     const [mc1RoundsVencidos, setMc1RoundsVencidos] = useState(0);
@@ -85,8 +90,7 @@ export default function Batalha() {
             setMc2RoundsVencidos(mc2RoundsVencidos + 1)
             setbotoesEspeciais(true)
         } else if (ponto1 == ponto2) {
-            setMc1RoundsVencidos(mc1RoundsVencidos + 1)
-            setMc2RoundsVencidos(mc2RoundsVencidos + 1)
+
             setbotoesEspeciais(true)
         }
     };
@@ -101,26 +105,19 @@ export default function Batalha() {
             setMc2RoundsVencidos(mc2RoundsVencidos - 1)
             setbotoesEspeciais(false)
         } else if (ponto1 == ponto2) {
-            setMc1RoundsVencidos(mc1RoundsVencidos - 1)
-            setMc2RoundsVencidos(mc2RoundsVencidos - 1)
+
             setbotoesEspeciais(false)
         }
     };
 
     const openAlertConfirmar = () => {
         if (mc1 == '' || mc2 == '') {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.', [
+            Alert.alert('Erro', 'Você precisa preencher todos os campos.', [
                 { text: 'OK', style: 'cancel' },
             ]);
         } else {
-            Alert.alert('Confirmar', 'Deseja salvar as informações?', [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Confirmar', onPress: () => {
-                        openModalBatalha()
-                    }
-                }
-            ]);
+            openModalBatalha()
+
         }
 
     }
@@ -131,22 +128,22 @@ export default function Batalha() {
         ]);
     }
     const openAlertZerarPontos = () => {
-        Alert.alert('Zerar', 'Deseja zerar os pontos?', [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Zerar', onPress: () => { zerarPontos() } }
+        Alert.alert('Zerar', 'Zerar os pontos?', [
+            { text: 'Não', style: 'cancel' },
+            { text: 'Sim', onPress: () => { zerarPontos() } }
         ]);
     }
     const openAlertSalvarBatalha = () => {
-        Alert.alert('Salvar', 'Salvar resultados no histórico?', [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Salvar', onPress: () => { salvarBatalha() } }
+        Alert.alert('Salvar', 'Salvar? O resultados serão salvos na tela Home.', [
+            { text: 'Não', style: 'cancel' },
+            { text: 'Sim', onPress: () => { salvarBatalha() } }
         ]);
     }
 
     const openAlertBack = () => {
-        Alert.alert('Voltar', 'Deseja desafazer as alterações e voltar para a tela anterior?', [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Voltar', onPress: () => { zerarTudo() } }
+        Alert.alert('Voltar', 'Desafazer as alterações e voltar para a tela anterior?', [
+            { text: 'Não', style: 'cancel' },
+            { text: 'Sim', onPress: () => { zerarTudo() } }
         ]);
     }
 
@@ -165,7 +162,7 @@ export default function Batalha() {
       }
    */
 
-    const navigateHome = () => {
+    const navigateHome = async () => {
         setActiveButton('Home')
         setIsLoading(true);
         setTimeout(() => {
@@ -200,31 +197,31 @@ export default function Batalha() {
                     salvarRound()
 
                 } else {
-                    salvarBatalha()
+                    openAlertSalvarBatalha()
                 }
 
             } else if (selectedRound == '3') {
                 if (round < 2) {
                     salvarRound()
                 } else {
-                    salvarBatalha()
+                    openAlertSalvarBatalha()
                 }
             } else if (selectedRound == '4') {
                 if (round < 3) {
                     salvarRound()
                 } else {
-                    salvarBatalha()
+                    openAlertSalvarBatalha()
                 }
             } else if (selectedRound == '5') {
                 if (round < 4) {
                     salvarRound()
                 } else {
-                    salvarBatalha()
+
                 }
             } else {
                 Alert.alert('Erro', 'Rounds disponíveis Não especificados')
             }
-        
+
         } catch (error) {
             console.error('Erro ao salvar os dados:', error);
         }
@@ -258,15 +255,8 @@ export default function Batalha() {
     }
 
     const salvarBatalha = async () => {
-        setPonto1(0)
-        setPonto2(0)
-        setPalco1(0)
-        setTecnica1(0)
-        setFlow1(0)
-        setPalco2(0)
-        setTecnica2(0)
-        setFlow2(0)
-      
+
+
 
         // Calcula os pontos extras baseados nos pontos especiais
         const pontosExtrasMC1 = (flowTotal1 + palcoTotal1 + tecnicaTotal1) * 0.5;
@@ -299,25 +289,43 @@ export default function Batalha() {
         };
 
         const updatedData = [...parsedData, newBatalha];
+        setModalVisible(false)
 
         await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData));
         setBatalha(updatedData);
 
         // Reseta todos os estados
-        setPontoTotal1(0)
-        setPontoTotal2(0)
-        setPalcoTotal1(0)
-        setPalcoTotal2(0)
-        setTecnicaTotal1(0)
-        setTecnicaTotal2(0)
-        setFlowTotal1(0)
-        setFlowTotal2(0)
-        setSelectedRound('3')
-        navigateHome()
 
-        setRound(0)
-        setMc1RoundsVencidos(0)
-        setMc2RoundsVencidos(0)
+
+
+
+        // Reseta todos os estados
+        setIsLoading2(true);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setMc1('')
+        setMc2('')
+        setPonto1(0)
+        setPonto2(0)
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+        setPontoTotal1(0);
+        setPontoTotal2(0);
+        setPalcoTotal1(0);
+        setPalcoTotal2(0);
+        setTecnicaTotal1(0);
+        setTecnicaTotal2(0);
+        setFlowTotal1(0);
+        setFlowTotal2(0);
+        setSelectedRound('3');
+        setRound(0);
+        setMc1RoundsVencidos(0);
+        setMc2RoundsVencidos(0);
+        setbotoesEspeciais(false)
+        setIsLoading2(false);
     }
 
 
@@ -483,6 +491,7 @@ export default function Batalha() {
                                 // perde o foco
                                 onChangeText={(text) => setMc1(text)}
                                 maxLength={11} // Adicione esta linha
+                                value={mc1}
 
 
                             />
@@ -503,7 +512,7 @@ export default function Batalha() {
                                 onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
                                 onChangeText={(text) => setMc2(text)}
                                 maxLength={11} // Adicione esta linha
-
+                                value={mc2}
                             />
                             <TouchableOpacity>
                                 <Image
@@ -550,9 +559,7 @@ export default function Batalha() {
 
             {/*Modal Batalha */}
             <Modal
-                visible={modalVisible && !isLoading}
-                transparent={true}
-                onRequestClose={closeModal}
+                visible={modalVisible}
             >
                 <View style={stylesModalBatalha.modalContainer}>
                     <View style={stylesModalBatalha.modalContent}>
@@ -567,7 +574,7 @@ export default function Batalha() {
                             <TouchableOpacity style={stylesModalBatalha.btnZerar} onPress={openAlertZerarPontos}>
                                 <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={stylesModalBatalha.helpContainer}>
+                            <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalBatalha.helpContainer}>
                                 <Text style={stylesModalBatalha.help}>?</Text>
                             </TouchableOpacity>
 
@@ -850,142 +857,219 @@ export default function Batalha() {
             </Modal>
 
 
-
             {/*Modal Botões Especiais */}
             <Modal
-                transparent={true} // Torna o fundo transparente
-                visible={botoesEspeciais && !isLoading}
-                animationType="fade" // Tipo de animação ao abrir o modal
-                onRequestClose={closeModalEspecial} // Fechar o modal ao clicar fora
+                visible={botoesEspeciais}
+
             >
                 <View style={stylesModalEspecial.modalEspecialOverlay}>
                     <View style={stylesModalEspecial.modalEspecialContainer}>
-                        <View style={stylesModalBatalha.header}>
-                            <TouchableOpacity style={stylesModalBatalha.back} onPress={closeModalEspecial}>
-                                <Image
-                                    source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
-                                    style={stylesModalBatalha.img}
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={stylesModalBatalha.btnZerar}
-                                onPress={openAlertZerarEspeciais}>
-                                <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={stylesModalBatalha.helpContainer}>
-                                <Text style={stylesModalBatalha.help}>?</Text>
-                            </TouchableOpacity>
 
-
-                        </View>
-
-                        <View style={stylesModalBatalha.main}>
-
-                            <View style={stylesModalBatalha.nomes}>
-
-                                <View style={stylesModalBatalha.nome}>
-                                    <Text style={stylesModalBatalha.textNome}>{mc1}</Text>
-                                </View>
-
-                                <View style={stylesModalBatalha.separadorContainer}>
-                                    <Text style={stylesModalBatalha.separador}></Text>
-                                </View>
-
-                                <View style={stylesModalBatalha.nome}>
-                                    <Text style={stylesModalBatalha.textNome}>{mc2}</Text>
-                                </View>
-
+                        {isLoading2 ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color="#ffffff" />                             
                             </View>
-
-                            <View style={stylesModalBatalha.pontos}>
-
-                                <View style={stylesModalBatalha.ponto}>
-                                    <Text style={stylesModalBatalha.textPonto}>{ponto1}</Text>
-                                </View>
-
-                                <View style={stylesModalBatalha.separadorContainer}>
-                                    <Text style={stylesModalBatalha.separador}>|</Text>
-                                </View>
-
-                                <View style={stylesModalBatalha.ponto}>
-                                    <Text style={stylesModalBatalha.textPonto}>{ponto2}</Text>
-                                </View>
-
-                            </View>
-
-                        </View>
-
-                        <View style={stylesModalBatalha.btnsPonto}>
-
-                            <View style={stylesModalEspecial.coll}>
-                                <View style={stylesModalEspecial.row}>
-
-                                    <TouchableOpacity onPress={addPalco1} style={stylesModalEspecial.especial}>
-                                        <Text style={stylesModalEspecial.textBtnEspecial}>Palco</Text>
+                        ) : (
+                            <>
+                                <View style={stylesModalBatalha.header}>
+                                    <TouchableOpacity style={stylesModalBatalha.back} onPress={closeModalEspecial}>
+                                        <Image
+                                            source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
+                                            style={stylesModalBatalha.img}
+                                        />
                                     </TouchableOpacity>
-                                    <Text style={stylesModalEspecial.textEspecial}>{palco1}</Text>
-                                </View>
-                                <View style={stylesModalEspecial.row}>
-
-                                    <TouchableOpacity onPress={addTecnica1} style={stylesModalEspecial.especial}>
-                                        <Text style={stylesModalEspecial.textBtnEspecial}>Técnica</Text>
+                                    <TouchableOpacity
+                                        style={stylesModalBatalha.btnZerar}
+                                        onPress={openAlertZerarEspeciais}>
+                                        <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
                                     </TouchableOpacity>
-                                    <Text style={stylesModalEspecial.textEspecial}>{tecnica1}</Text>
-                                </View>
-                                <View style={stylesModalEspecial.row}>
-
-                                    <TouchableOpacity onPress={addFlow1} style={stylesModalEspecial.especial}>
-                                        <Text style={stylesModalEspecial.textBtnEspecial}>Flow</Text>
+                                    <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalBatalha.helpContainer}>
+                                        <Text style={stylesModalBatalha.help}>?</Text>
                                     </TouchableOpacity>
-                                    <Text style={stylesModalEspecial.textEspecial}>{flow1}</Text>
-                                </View>
-                            </View>
-                            <View style={stylesModalEspecial.separadorContainer}>
-                                <Text style={stylesModalBatalha.separador}></Text>
-                            </View>
-                            <View style={stylesModalEspecial.coll}>
-                                <View style={stylesModalEspecial.row}>
 
-                                    <TouchableOpacity onPress={addPalco2} style={stylesModalEspecial.especial}>
-                                        <Text style={stylesModalEspecial.textBtnEspecial}>Palco</Text>
-                                    </TouchableOpacity>
-                                    <Text style={stylesModalEspecial.textEspecial}>{palco2}</Text>
-                                </View>
-                                <View style={stylesModalEspecial.row}>
 
-                                    <TouchableOpacity onPress={addTecnica2} style={stylesModalEspecial.especial}>
-                                        <Text style={stylesModalEspecial.textBtnEspecial}>Técnica</Text>
-                                    </TouchableOpacity>
-                                    <Text style={stylesModalEspecial.textEspecial}>{tecnica2}</Text>
                                 </View>
-                                <View style={stylesModalEspecial.row}>
+                                <View style={stylesModalBatalha.main}>
 
-                                    <TouchableOpacity onPress={addFlow2} style={stylesModalEspecial.especial}>
-                                        <Text style={stylesModalEspecial.textBtnEspecial}>Flow</Text>
-                                    </TouchableOpacity>
-                                    <Text style={stylesModalEspecial.textEspecial}>{flow2}</Text>
+                                    <View style={stylesModalEspecial.nomes}>
+
+                                        <View style={stylesModalEspecial.nome}>
+                                            <Text style={stylesModalBatalha.textNome}>{mc1}</Text>
+                                        </View>
+
+                                        <View style={stylesModalBatalha.separadorContainer}>
+                                            <Text style={stylesModalBatalha.separador}></Text>
+                                        </View>
+
+                                        <View style={stylesModalEspecial.nome}>
+                                            <Text style={stylesModalBatalha.textNome}>{mc2}</Text>
+                                        </View>
+
+                                    </View>
+
+                                    <View style={stylesModalBatalha.pontos}>
+
+                                        <View style={stylesModalBatalha.ponto}>
+                                            <Text style={stylesModalBatalha.textPonto}>{ponto1}</Text>
+                                        </View>
+
+                                        <View style={stylesModalEspecial.separadorContainer}>
+                                            <Text style={stylesModalEspecial.separador}>|</Text>
+                                        </View>
+
+                                        <View style={stylesModalBatalha.ponto}>
+                                            <Text style={stylesModalBatalha.textPonto}>{ponto2}</Text>
+                                        </View>
+
+                                    </View>
+
                                 </View>
-                            </View>
 
-                        </View>
+                                <View style={stylesModalEspecial.BtnsEspecialContainer}>
+
+                                    <View style={stylesModalEspecial.coll}>
+                                        <View style={stylesModalEspecial.row}>
+
+                                            <TouchableOpacity onPress={addPalco1} style={stylesModalEspecial.especial}>
+                                                <Text style={stylesModalEspecial.textBtnEspecial}>Palco</Text>
+                                            </TouchableOpacity>
+                                            <Text style={stylesModalEspecial.textEspecial}>{palco1}</Text>
+                                        </View>
+                                        <View style={stylesModalEspecial.row}>
+
+                                            <TouchableOpacity onPress={addTecnica1} style={stylesModalEspecial.especial}>
+                                                <Text style={stylesModalEspecial.textBtnEspecial}>Técnica</Text>
+                                            </TouchableOpacity>
+                                            <Text style={stylesModalEspecial.textEspecial}>{tecnica1}</Text>
+                                        </View>
+                                        <View style={stylesModalEspecial.row}>
+
+                                            <TouchableOpacity onPress={addFlow1} style={stylesModalEspecial.especial}>
+                                                <Text style={stylesModalEspecial.textBtnEspecial}>Flow</Text>
+                                            </TouchableOpacity>
+                                            <Text style={stylesModalEspecial.textEspecial}>{flow1}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={stylesModalEspecial.separadorContainer}>
+                                        <Text style={stylesModalEspecial.separador}></Text>
+                                    </View>
+                                    <View style={stylesModalEspecial.coll}>
+                                        <View style={stylesModalEspecial.row}>
+
+                                            <TouchableOpacity onPress={addPalco2} style={stylesModalEspecial.especial}>
+                                                <Text style={stylesModalEspecial.textBtnEspecial}>Palco</Text>
+                                            </TouchableOpacity>
+                                            <Text style={stylesModalEspecial.textEspecial}>{palco2}</Text>
+                                        </View>
+                                        <View style={stylesModalEspecial.row}>
+
+                                            <TouchableOpacity onPress={addTecnica2} style={stylesModalEspecial.especial}>
+                                                <Text style={stylesModalEspecial.textBtnEspecial}>Técnica</Text>
+                                            </TouchableOpacity>
+                                            <Text style={stylesModalEspecial.textEspecial}>{tecnica2}</Text>
+                                        </View>
+                                        <View style={stylesModalEspecial.row}>
+
+                                            <TouchableOpacity onPress={addFlow2} style={stylesModalEspecial.especial}>
+                                                <Text style={stylesModalEspecial.textBtnEspecial}>Flow</Text>
+                                            </TouchableOpacity>
+                                            <Text style={stylesModalEspecial.textEspecial}>{flow2}</Text>
+                                        </View>
+                                    </View>
+
+                                </View>
+
+                                <TouchableOpacity
+                                    style={stylesModalBatalha.BtnContainer}
+                                    onPress={salvar}
+                                    disabled={isLoading} // Desativa o botão enquanto carrega
+                                >
+                                    {isLoading ? (
+                                        <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                        <>
+
+                                            <Text style={stylesModalBatalha.BtnText}>Salvar {round + 1}/{selectedRound}</Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                                
+                            </>
+
+                        )}
+
+
+
+
+                    </View>
+                </View>
+            </Modal>
+
+            {/*Modal Ajuda */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={ajuda}
+                onRequestClose={handleCloseModalAjuda}
+            >
+                <View style={stylesModalAjuda.modalBackground}>
+                    <View style={stylesModalAjuda.modalContainer}>
+                        <ScrollView>
+                            <Text style={stylesModalAjuda.title}>PRESENÇA DE PALCO / MC</Text>
+                            <Text style={stylesModalAjuda.item}>1. Interação com objetos</Text>
+                            <Text style={stylesModalAjuda.item}>2. Falar sobre a plateia</Text>
+                            <Text style={stylesModalAjuda.item}>3. Falar com a plateia</Text>
+                            <Text style={stylesModalAjuda.item}>4. Falar sobre algo que está acontecendo no ambiente ao vivo</Text>
+                            <Text style={stylesModalAjuda.item}>5. Rimas que vêm com energia/vibe (atraem o público)</Text>
+                            <Text style={stylesModalAjuda.item}>6. Postura dentro e fora das batalhas</Text>
+                            <Text style={stylesModalAjuda.item}>7. Personalidade e estética</Text>
+                            <Text style={stylesModalAjuda.item}>8. Movimentação em palco</Text>
+                            <Text style={stylesModalAjuda.item}>9. Presença de campeão/vencedor (dentro e fora do palco)</Text>
+
+                            <Text style={stylesModalAjuda.title}>FLOW</Text>
+                            <Text style={stylesModalAjuda.item}>1. Cantado</Text>
+                            <Text style={stylesModalAjuda.item}>2. Entonação</Text>
+                            <Text style={stylesModalAjuda.item}>3. Seguir o ritmo do beat (compasso)</Text>
+                            <Text style={stylesModalAjuda.item}>4. Speedflow</Text>
+                            <Text style={stylesModalAjuda.item}>5. Variação</Text>
+                            <Text style={stylesModalAjuda.item}>6. Dicção</Text>
+                            <Text style={stylesModalAjuda.item}>7. Respiração</Text>
+                            <Text style={stylesModalAjuda.item}>8. Entrada boa</Text>
+                            <Text style={stylesModalAjuda.item}>9. Seguir o BPM (boombap, trap, drill, Detroit, etc.)</Text>
+                            <Text style={stylesModalAjuda.item}>10. Lento</Text>
+                            <Text style={stylesModalAjuda.item}>11. Onomatopeia</Text>
+                            <Text style={stylesModalAjuda.item}>12. Controle para chegar na terminação</Text>
+
+                            <Text style={stylesModalAjuda.title}>TÉCNICAS</Text>
+                            <Text style={stylesModalAjuda.item}>1. Paronomásia</Text>
+                            <Text style={stylesModalAjuda.item}>2. Aliteração</Text>
+                            <Text style={stylesModalAjuda.item}>3. Calambur</Text>
+                            <Text style={stylesModalAjuda.item}>4. Wordplay</Text>
+                            <Text style={stylesModalAjuda.item}>5. Anadiplose</Text>
+                            <Text style={stylesModalAjuda.item}>6. Multissilábicas One Two</Text>
+                            <Text style={stylesModalAjuda.item}>7. Esdrújulas</Text>
+                            <Text style={stylesModalAjuda.item}>8. Univocalismo</Text>
+                            <Text style={stylesModalAjuda.item}>9. Derivação</Text>
+                            <Text style={stylesModalAjuda.item}>10. Antanaclase</Text>
+                            <Text style={stylesModalAjuda.item}>11. Retruécano</Text>
+                            <Text style={stylesModalAjuda.item}>12. Ánafora</Text>
+                            <Text style={stylesModalAjuda.item}>13. Antítese</Text>
+                            <Text style={stylesModalAjuda.item}>14. Comparação</Text>
+                            <Text style={stylesModalAjuda.item}>15. Hipérbole</Text>
+                            <Text style={stylesModalAjuda.item}>16. Dilogia</Text>
+                            <Text style={stylesModalAjuda.item}>17. Metáfora</Text>
+                            <Text style={stylesModalAjuda.item}>18. Esquemas</Text>
+                            <Text style={stylesModalAjuda.item}>19. Rimas perfeitas (coerência com fatality)</Text>
+                            <Text style={stylesModalAjuda.item}>20. Métricas</Text>
+                        </ScrollView>
 
                         <TouchableOpacity
-                            style={stylesModalBatalha.BtnContainer}
-                            onPress={salvar}
+                            style={styles.BtnContainer}
+                            onPress={handleCloseModalAjuda}
                             disabled={isLoading} // Desativa o botão enquanto carrega
                         >
-                            {isLoading ? (
-                                <ActivityIndicator size="small" color="#FFF" />
-                            ) : (
-                                <>
-
-                                    <Text style={stylesModalBatalha.BtnText}>Salvar Round {round + 1}/{selectedRound}</Text>
-                                </>
-                            )}
+                            <Text style={styles.BtnText}>Fechar</Text>
                         </TouchableOpacity>
-
-
-
                     </View>
                 </View>
             </Modal>
@@ -1086,8 +1170,11 @@ const stylesModalEspecial = StyleSheet.create({
         width: '100%', // Modal ocupa toda a largura da tela
         height: '100%', // Modal ocupa toda a altura da tela
         backgroundColor: '#190a29',
-        justifyContent: 'center',
         alignItems: 'center',
+        paddingTop: 35,
+        paddingRight: 26,
+        paddingBottom: 35,
+        paddingLeft: 26
     },
     BtnContainer: {
         // Garante que o gradiente não ultrapasse as bordas arredondadas
@@ -1114,8 +1201,14 @@ const stylesModalEspecial = StyleSheet.create({
         height: 15, // Altura da imagem
         marginRight: 8, // Espaço entre a imagem e o campo de entrada
     },
-
-
+    header: {
+        width: '100%',
+        height: 40,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        marginBottom: 40,
+    },
     modalEspecialOverlay: {
         flex: 1,
         justifyContent: 'center',
@@ -1141,8 +1234,9 @@ const stylesModalEspecial = StyleSheet.create({
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'center',
-        marginBottom: 25,
-        height: 420
+        height: 373,
+        marginTop: 100,
+        marginBottom: 30,
     },
     BtnEspecialContainer: {
         width: '100%',
@@ -1179,11 +1273,31 @@ const stylesModalEspecial = StyleSheet.create({
         textAlign: 'center',
         fontSize: 27,
     },
+    separador: {
+        color: '#ffffff',
+        fontSize: 36,
+        textAlign: 'center',
+        width: '100%',
+        height: '100%',
+    },
     separadorContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100%',
-        width: '8%',
+        width: 40,
+    },
+    nomes: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    nome: {
+        backgroundColor: '#704bff',
+        justifyContent: 'center',
+        borderRadius: 6,
+        height: '100%',
+        width: 154
     },
 })
 
@@ -1194,22 +1308,23 @@ const stylesModalBatalha = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#190a29', // Fundo semitransparente para o modal
+        paddingTop: 35,
+        paddingRight: 20,
+        paddingBottom: 35,
+        paddingLeft: 20
     },
     modalContent: {
         width: '100%', // Modal ocupa toda a largura da tela
         height: '100%', // Modal ocupa toda a altura da tela
         backgroundColor: '#190a29',
         alignItems: 'center',
-        paddingTop: 35,
-        paddingRight: 26,
-        paddingBottom: 35,
-        paddingLeft: 26
+
     },
     header: {
         width: '100%',
         height: 40,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 40
     },
@@ -1218,6 +1333,7 @@ const stylesModalBatalha = StyleSheet.create({
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
+
     },
     img: {
         width: "100%",
@@ -1227,11 +1343,13 @@ const stylesModalBatalha = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
-        paddingBottom: 4
+        width: 30,
+        marginBottom: 13
     },
     help: {
-        fontSize: 30,
+        fontSize: 33,
         textAlign: 'center',
+
         color: '#ffffff',
         transform: [{ scaleY: 0.7 }],
     },
@@ -1261,6 +1379,8 @@ const stylesModalBatalha = StyleSheet.create({
         paddingLeft: 30,
         overflow: 'hidden',
         borderRadius: 6,
+        marginRight: 50,
+        marginLeft: 50
     },
     BtnText: {
         color: '#ffffff',
@@ -1273,7 +1393,7 @@ const stylesModalBatalha = StyleSheet.create({
     nomes: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center'
     },
     nome: {
@@ -1281,7 +1401,7 @@ const stylesModalBatalha = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 6,
         height: '100%',
-        width: '45%'
+        width: 154
     },
     textNome: {
         color: '#ffffff',
@@ -1292,16 +1412,16 @@ const stylesModalBatalha = StyleSheet.create({
     pontos: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         height: '100%',
-        marginVertical: 5
+        marginVertical: 5,
     },
     ponto: {
         justifyContent: 'center',
         borderRadius: 6,
         height: '100%',
-        width: '45%'
+        width: 153
     },
     textPonto: {
         color: '#ffffff',
@@ -1319,7 +1439,7 @@ const stylesModalBatalha = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         height: '100%',
-        width: '10%',
+        width: 40,
     },
 
     btnsPonto: {
@@ -1374,6 +1494,49 @@ const stylesModalBatalha = StyleSheet.create({
 })
 
 
+const stylesModalAjuda = StyleSheet.create({
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContainer: {
+        width: '90%',
+        maxHeight: '80%',
+        backgroundColor: '#190a29',
+        borderRadius: 10,
+        padding: 20,
+    },
+    title: {
+        fontSize: 24,
+        marginBottom: 10,
+        marginTop: 20,
+        color: '#ffffff',
+        fontFamily: 'Ringstun'
+    },
+    item: {
+        fontSize: 16,
+        marginVertical: 5,
+        color: '#ffffff',
+        fontFamily: 'Montserrat_400Regular'
+    },
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: '#6200ee',
+        padding: 10,
+        borderRadius: 10,
+        alignSelf: 'center',
+    },
+    closeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        color: '#ffffff'
+    },
+});
+
+
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -1394,10 +1557,10 @@ const styles = StyleSheet.create({
     },
     textMain: {
         color: '#FFFFFF', // Cor branca (substituindo var(--White, #FFF))
-        fontSize: 29,// Tamanho da fonte
+        fontSize: 32,// Tamanho da fonte
         fontStyle: 'normal', // Estilo normal da fonte
         fontWeight: '400', // Peso da fonte
-        fontFamily: 'BlowBrush',
+        fontFamily: 'Ringstun',
     },
     text: {
         color: '#A5A5A5', // Cor Light-gray

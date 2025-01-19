@@ -4,6 +4,11 @@ npx eas-cli login
 npx eas-cli build -p android --profile preview
 npx eas-cli build -p android --profile production
 
+
+
+npx expo build:android
+
+
 git init
 git add .
 git commit -m "first commit"

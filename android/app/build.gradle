@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.sjurados.app'
+    namespace 'com.seuusername.s_jurados'
     defaultConfig {
-        applicationId 'com.sjurados.app'
+        applicationId 'com.seuusername.s_jurados'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

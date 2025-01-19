@@ -114,7 +114,7 @@ export default function Login() {
                     deviceId: deviceId,
                     loginTime: loginTime,
                 }); */
-                if (snapshot.exists()) {
+           /*      if (snapshot.exists()) {
                     const nome = snapshot.val().nome; // Obtenha o campo 'nome'
 
                     if (nome) {
@@ -133,7 +133,7 @@ export default function Login() {
                     }
                 } else {
                     console.log("Nenhum dado encontrado para o usuário:", user.uid);
-                }
+                } */
 
                 // Referência ao caminho no Realtime Database (por exemplo, "cadastroS/emailDoUsuario")
 
@@ -312,8 +312,8 @@ const styles = StyleSheet.create({
         paddingLeft: 24
     },
     back: {
-        width: 27, // Largura do botão
-        height: 27, // Altura do botão
+        width: 30, // Largura do botão
+        height: 30,// Altura do botão
         resizeMode: "contain",
     },
     parte1: {
@@ -362,10 +362,12 @@ const styles = StyleSheet.create({
     text: {
         color: '#A5A5A5', // Cor Light-gray
         fontFamily: 'Montserrat_400Regular', // Fonte Montserrat
-        fontSize: 14, // Tamanho da fonte
+        fontSize: 15, // Tamanho da fonte
         fontStyle: 'normal', // Estilo da fonte
         fontWeight: '300', // Peso da fonte (Regular) 
-        marginTop: 7
+        marginTop: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#A5A5A5',
     },
     mudarSenha: {
         width: '100%',

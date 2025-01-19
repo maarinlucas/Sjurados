@@ -154,18 +154,18 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     back: {
-        width: 27, // Largura do botão
-        height: 27, // Altura do botão
+        width: 30, // Largura do botão
+        height: 30, // Altura do botão
         resizeMode: "contain",
     },
     textMain: {
         flex: 1, // Faz o texto ocupar o espaço restante
         color: '#FFF', // Cor branca (substituindo var(--White, #FFF))
         textAlign: 'center', // Alinhamento do texto no centro
-        fontSize: 22,// Tamanho da fonte
+        fontSize: 23,// Tamanho da fonte
         fontStyle: 'normal', // Estilo normal da fonte
         fontWeight: '400', // Peso da fonte
-        lineHeight: 25, // Altura da linha
+
         fontFamily: 'Ringstun',
         paddingRight: 20,
 

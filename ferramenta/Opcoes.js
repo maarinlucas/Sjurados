@@ -14,7 +14,6 @@ export default function Opcoes() {
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular,
         Montserrat_700Bold,
-        'BlowBrush': require('../assets/fonts/blowbrush.ttf'),
         'Ringstun': require("../assets/fonts/ringstun.ttf"),
     });
 
@@ -251,7 +250,8 @@ const styles = StyleSheet.create({
         paddingRight: 43,
         paddingBottom: 45,
         paddingLeft: 43,
-        height: '90%'
+        height: '90%',
+        
     },
     parte1: {
         alignItems: 'flex-start',
@@ -259,10 +259,10 @@ const styles = StyleSheet.create({
     },
     textMain: {
         color: '#FFFFFF', // Cor branca (substituindo var(--White, #FFF))
-        fontSize: 29,// Tamanho da fonte
+        fontSize: 32,// Tamanho da fonte
         fontStyle: 'normal', // Estilo normal da fonte
         fontWeight: '400', // Peso da fonte
-        fontFamily: 'BlowBrush',
+        fontFamily: 'Ringstun',
     },
     text: {
         color: '#A5A5A5', // Cor Light-gray
@@ -274,27 +274,26 @@ const styles = StyleSheet.create({
     },
     parte2: {
         alignItems: 'center',
-        paddingTop: '20%',
+        justifyContent: 'center',
+        height: '80%',
         gap: 45,
     },
     button: {
         width: '100%',
-        height: 45,
+        height: 60,
         justifyContent: 'center',
         alignItems: 'center',
         display: 'inline-flex',
         paddingRight: 20,
         paddingLeft: 20,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
-        backgroundColor: 'transparent',
+        borderRadius: 6,
+        backgroundColor: '#704BFF',
     },
     textBtn: {
         color: '#FFF',
         textAlign: 'center',
         fontFamily: 'Montserrat_700Bold',
-        fontSize: 16,
+        fontSize: 15,
         fontStyle: 'normal',
         fontWeight: '700',
     },

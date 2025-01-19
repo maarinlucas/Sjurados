@@ -1,4 +1,4 @@
-package com.sjurados.app
+package com.seuusername.s_jurados
 
 import android.app.Application
 import android.content.res.Configuration

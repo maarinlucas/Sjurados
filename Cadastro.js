@@ -50,13 +50,13 @@ export default function Home() {
   const formatPhoneNumber = (text) => {
     // Remove todos os caracteres não numéricos
     const cleaned = text.replace(/\D/g, '');
-    
+
     // Aplica a máscara (xx)xxxxx-xxxx
     let formatted = cleaned;
     if (cleaned.length <= 11) {
       formatted = cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1)$2-$3');
     }
-    
+
     return formatted;
   };
 
@@ -78,14 +78,14 @@ export default function Home() {
   const validateEmail = (text) => {
     // Remove espaços em branco e converte para minúsculas
     const cleanedEmail = text.toLowerCase().trim();
-    
+
     // Se o usuário digitou @, verifica se é @gmail.com
     if (cleanedEmail.includes('@')) {
       if (!cleanedEmail.endsWith('@gmail.com')) {
         return cleanedEmail.split('@')[0] + '@gmail.com';
       }
     }
-    
+
     return cleanedEmail;
   };
 
@@ -187,7 +187,7 @@ export default function Home() {
 
           <View style={styles.inputContainer}>
             <TextInput
-             
+
               style={[styles.input, isFocused && styles.inputFocused]}
               placeholder="Nome"
               placeholderTextColor="#A0A0A0"
@@ -367,18 +367,17 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   back: {
-    width: 27, // Largura do botão
-    height: 27, // Altura do botão
+    width: 30, // Largura do botão
+    height: 30, // Altura do botão
     resizeMode: "contain",
   },
   textMain: {
     flex: 1, // Faz o texto ocupar o espaço restante
     color: '#FFF', // Cor branca (substituindo var(--White, #FFF))
     textAlign: 'center', // Alinhamento do texto no centro
-    fontSize: 22,// Tamanho da fonte
+    fontSize: 32,// Tamanho da fonte
     fontStyle: 'normal', // Estilo normal da fonte
     fontWeight: '400', // Peso da fonte
-    lineHeight: 25, // Altura da linha
     fontFamily: 'Ringstun',
     paddingRight: 20,
 

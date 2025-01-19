@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
     paddingBottom: 45,
     paddingLeft: 24,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: '#000000'
   },
   button: {
     // Garante que o gradiente não ultrapasse as bordas arredondadas
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   textMain: {
     color: '#FFF', // Cor branca (substituindo var(--White, #FFF))
     textAlign: 'center', // Alinhamento do texto no centro
-    fontSize: 22, // Tamanho da fonte
+    fontSize: 24, // Tamanho da fonte
     fontStyle: 'normal', // Estilo normal da fonte
     lineHeight: 25, // Altura da linha
     marginBottom: 10,
