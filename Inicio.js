@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     color: '#FFF', // Cor White
     textAlign: 'center', // Alinhamento centralizado
     fontFamily: 'Montserrat_400Regular', // Fonte Montserrat
-    fontSize: 16, // Tamanho da fonte
+    fontSize: 20, // Tamanho da fonte
     fontStyle: 'normal', // Estilo normal
     fontWeight: '400', // Peso regular da fonte
     textDecorationLine: 'underline', // Sublinha o texto

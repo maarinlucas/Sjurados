@@ -16,7 +16,7 @@ export default function Home() {
   const [isLoadingAdd, setIsLoadingAdd] = useState(false);
   const [isLoadingScreen, setIsLoadingScreen] = useState(true);
 
-  
+
 
   const [batalhas, setBatalha] = useState([]);
 
@@ -25,12 +25,12 @@ export default function Home() {
       const existingData = await AsyncStorage.getItem('batalhas'); // Recupera os dados
       const parsedData = existingData ? JSON.parse(existingData) : []; // Converte para array
       setBatalha(parsedData); // Atualiza o estado com os dados carregados
-      
+
     } catch (error) {
       console.error('Erro ao carregar os dados:', error);
     }
   };
-  
+
   useEffect(() => {
     loadData(); // Carrega os dados ao montar a tela
   }, []);
@@ -46,23 +46,21 @@ export default function Home() {
   });
 
   // Se as fontes ainda não estiverem carregadas, exibe uma tela de carregamento.
-  
+
 
   const navigateOpcoes = () => {
     setActiveButton('Opções');
-    setIsLoadingScreen(true);
-     setTimeout(() => {
-            navigation.navigate('Opcoes');
-        }, 100);
-    
+
+    navigation.navigate('Opcoes');
+
+
   }
 
   const navigateBatalha = () => {
     setActiveButton('Adicionar Batalha');
-    setIsLoadingScreen(true);
-     setTimeout(() => {
-            navigation.navigate('Batalha');
-        }, 100);
+
+    navigation.navigate('Batalha');
+
   }
 
   const handleAddBatalhaButton = () => {
@@ -79,40 +77,40 @@ export default function Home() {
 
       // Filtra a batalha a ser excluída
       const updatedData = parsedData.filter(item => item.id !== id);
-      
+
       await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData)); // Atualiza o AsyncStorage
       setBatalha(updatedData); // Atualiza o estado local
-      
+
     } catch (error) {
       console.error('Erro ao excluir os dados:', error);
     }
   };
 
 
-     useEffect(() => {
-      const fetchUserName = async () => {
-        try {
-          const user = auth.currentUser;
-          if (user) {
-            const uid = user.uid;
-            const dbRef = ref(db);
-            const snapshot = await get(child(dbRef, `cadastroS/${uid}`));
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              setUserName(data.nome || "Usuário");
-            } else {
-              console.log("Nenhum dado encontrado para este usuário.");
-            }
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const uid = user.uid;
+          const dbRef = ref(db);
+          const snapshot = await get(child(dbRef, `cadastroS/${uid}`));
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            setUserName(data.nome || "Usuário");
+          } else {
+            console.log("Nenhum dado encontrado para este usuário.");
           }
-        } catch (error) {
-          console.error("Erro ao buscar o nome do usuário:", error);
-        } finally {
-          setIsLoadingUser(false);
         }
-      };
-  
-      fetchUserName();
-    }, []); 
+      } catch (error) {
+        console.error("Erro ao buscar o nome do usuário:", error);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUserName();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', () => {

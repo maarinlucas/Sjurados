@@ -29,7 +29,7 @@ export default function Opcoes() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 50);
+        }, 0);
 
         return () => clearTimeout(timer);
     }, []);
@@ -40,18 +40,16 @@ export default function Opcoes() {
 
     const navigateHome = () => {
         setActiveButton('Home');
-        setIsLoading(true);
-        setTimeout(() => {
-            navigation.navigate('Home');
-        }, 100);
+
+        navigation.navigate('Home');
+
     }
 
     const navigateBatalha = () => {
         setActiveButton('Adicionar Batalha');
-        setIsLoading(true);
-        setTimeout(() => {
-            navigation.navigate('Batalha');
-        }, 100);
+
+        navigation.navigate('Batalha');
+
     }
 
     const handleLogout = async () => {
@@ -71,7 +69,7 @@ export default function Opcoes() {
         try {
             const url = 'http://politicaprivacidadesjurados.infinityfreeapp.com/?i=1';
             const supported = await Linking.canOpenURL(url);
-            
+
             if (supported) {
                 await Linking.openURL(url);
             } else {
@@ -82,30 +80,30 @@ export default function Opcoes() {
         }
     };
 
- const abrirContato = async () => {
-    try {
-        const email = 'royalx481@gmail.com';
-        const url = `mailto:${email}`;
+    const abrirContato = async () => {
+        try {
+            const email = 'royalx481@gmail.com';
+            const url = `mailto:${email}`;
 
-        // Verificar se o dispositivo suporta o esquema mailto
-        const supported = await Linking.canOpenURL(url);
+            // Verificar se o dispositivo suporta o esquema mailto
+            const supported = await Linking.canOpenURL(url);
 
-        if (supported) {
-            await Linking.openURL(url); // Abre o aplicativo de e-mail
-        } else {
+            if (supported) {
+                await Linking.openURL(url); // Abre o aplicativo de e-mail
+            } else {
+                Alert.alert(
+                    'Erro',
+                    'Nenhum aplicativo de email está configurado ou disponível neste dispositivo.'
+                );
+            }
+        } catch (error) {
             Alert.alert(
                 'Erro',
-                'Nenhum aplicativo de email está configurado ou disponível neste dispositivo.'
+                `Ocorreu um problema ao tentar abrir o email: ${error.message}`
             );
+            console.error('Erro ao abrir email:', error);
         }
-    } catch (error) {
-        Alert.alert(
-            'Erro',
-            `Ocorreu um problema ao tentar abrir o email: ${error.message}`
-        );
-        console.error('Erro ao abrir email:', error);
-    }
-};
+    };
 
     return (
         <View style={styles.container}>
@@ -121,7 +119,7 @@ export default function Opcoes() {
                     </View>
 
                     <View style={styles.parte2}>
-                    <TouchableOpacity
+                        <TouchableOpacity
                             style={[styles.button, isLoading && styles.buttonDisabled]}
                             onPress={abrirPrivacidade}
                             disabled={isLoading}
@@ -149,7 +147,7 @@ export default function Opcoes() {
                             </View>
                         </TouchableOpacity>
 
-                        
+
                         <TouchableOpacity
                             style={[styles.button, isLoading && styles.buttonDisabled]}
                             onPress={handleLogout}
@@ -259,7 +257,7 @@ const styles = StyleSheet.create({
         paddingBottom: 45,
         paddingLeft: 43,
         height: '90%',
-        
+
     },
     parte1: {
         alignItems: 'flex-start',

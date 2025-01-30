@@ -15,7 +15,7 @@ import UUID from 'react-native-uuid';
 
 export default function Batalha() {
     const [activeButton, setActiveButton] = useState('Adicionar Batalha');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [isLoading2, setIsLoading2] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -27,11 +27,7 @@ export default function Batalha() {
     const handleCloseModalAjuda = () => setAjuda(false);
 
 
-    useEffect(() => {
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 50);
-    }, []);
+   
 
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
@@ -164,18 +160,12 @@ export default function Batalha() {
 
     const navigateHome = async () => {
         setActiveButton('Home')
-        setIsLoading(true);
-        setTimeout(() => {
-            navigation.navigate('Home');
-        }, 100);
+      navigation.navigate('Home')
     }
 
     const navigateOpcoes = () => {
         setActiveButton('Opções')
-        setIsLoading(true);
-        setTimeout(() => {
-            navigation.navigate('Opcoes');
-        }, 100);
+      navigation.navigate('Opcoes')
     }
 
     const corrigir1 = () => {
