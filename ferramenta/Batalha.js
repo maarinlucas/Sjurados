@@ -20,6 +20,8 @@ export default function Batalha() {
     const [isFocused, setIsFocused] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [botoesEspeciais, setbotoesEspeciais] = useState(false);
+    const [modalSalvarBatalha, setModalSalvarBatalha] = useState(false);
+    const [modalSalvarRound, setModalSalvarRound] = useState(false);
     const [ajuda, setAjuda] = useState(false);
     const [data, setData] = useState(new Date().toLocaleDateString());
 
@@ -27,7 +29,7 @@ export default function Batalha() {
     const handleCloseModalAjuda = () => setAjuda(false);
 
 
-   
+
 
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
@@ -52,6 +54,7 @@ export default function Batalha() {
 
     const [mc1RoundsVencidos, setMc1RoundsVencidos] = useState(0);
     const [mc2RoundsVencidos, setMc2RoundsVencidos] = useState(0);
+    const [temMcVencedor, setTemMcVencedor] = useState(false);
 
 
 
@@ -78,33 +81,83 @@ export default function Batalha() {
     };
 
 
+
+
+
+
     const openModalEspecial = () => {
-        if (ponto1 > ponto2) {
-            setMc1RoundsVencidos(mc1RoundsVencidos + 1)
-            setbotoesEspeciais(true)
-        } else if (ponto2 > ponto1) {
-            setMc2RoundsVencidos(mc2RoundsVencidos + 1)
-            setbotoesEspeciais(true)
-        } else if (ponto1 == ponto2) {
-
-            setbotoesEspeciais(true)
-        }
+        setbotoesEspeciais(true)
     };
-
 
     const closeModalEspecial = () => {
-        setbotoesEspeciais(false);
-        if (ponto1 > ponto2) {
-            setMc1RoundsVencidos(mc1RoundsVencidos - 1)
-            setbotoesEspeciais(false)
-        } else if (ponto2 > ponto1) {
-            setMc2RoundsVencidos(mc2RoundsVencidos - 1)
-            setbotoesEspeciais(false)
-        } else if (ponto1 == ponto2) {
+        setbotoesEspeciais(false)
+    };
 
-            setbotoesEspeciais(false)
+
+
+    const openModalSalvarBatalha = () => {
+
+
+        if (ponto1 > ponto2) {
+            setModalSalvarBatalha(true)
+            setMc1RoundsVencidos(mc1RoundsVencidos + 1)
+
+
+        } else if (ponto2 > ponto1) {
+            setModalSalvarBatalha(true)
+            setMc2RoundsVencidos(mc2RoundsVencidos + 1)
+
+        } else {
+            setModalSalvarBatalha(true)
         }
     };
+    const closeModalSalvarBatalha = () => {
+
+
+        if (ponto1 > ponto2) {
+            setModalSalvarBatalha(false)
+            setMc1RoundsVencidos(mc1RoundsVencidos - 1)
+
+        } else if (ponto2 > ponto1) {
+            setModalSalvarBatalha(false)
+            setMc2RoundsVencidos(mc2RoundsVencidos - 1)
+
+
+        } else {
+            setModalSalvarBatalha(false)
+        }
+    };
+
+    const openModalSalvarRound = () => {
+        if (ponto1 > ponto2) {
+            setMc1RoundsVencidos(mc1RoundsVencidos + 1)
+            setModalSalvarRound(true)
+        } else if (ponto2 > ponto1) {
+            setMc2RoundsVencidos(mc2RoundsVencidos + 1)
+            setModalSalvarRound(true)
+        } else if (ponto1 == ponto2) {
+
+            setModalSalvarRound(true)
+        }
+    };
+    const closeModalSalvarRound = () => {
+        if (ponto1 > ponto2) {
+            setMc1RoundsVencidos(mc1RoundsVencidos - 1)
+            setModalSalvarRound(false)
+        } else if (ponto2 > ponto1) {
+            setMc2RoundsVencidos(mc2RoundsVencidos - 1)
+            setModalSalvarRound(false)
+        } else if (ponto1 == ponto2) {
+
+            setModalSalvarRound(false)
+        }
+    };
+
+
+
+
+
+
 
     const openAlertConfirmar = () => {
         if (mc1 == '' || mc2 == '') {
@@ -129,12 +182,7 @@ export default function Batalha() {
             { text: 'Sim', onPress: () => { zerarPontos() } }
         ]);
     }
-    const openAlertSalvarBatalha = () => {
-        Alert.alert('Salvar', 'Salvar? O resultados serão salvos na tela Home.', [
-            { text: 'Não', style: 'cancel' },
-            { text: 'Sim', onPress: () => { salvarBatalha() } }
-        ]);
-    }
+
 
     const openAlertBack = () => {
         Alert.alert('Voltar', 'Desafazer as alterações e voltar para a tela anterior?', [
@@ -160,12 +208,12 @@ export default function Batalha() {
 
     const navigateHome = async () => {
         setActiveButton('Home')
-      navigation.navigate('Home')
+        navigation.navigate('Home')
     }
 
     const navigateOpcoes = () => {
         setActiveButton('Opções')
-      navigation.navigate('Opcoes')
+        navigation.navigate('Opcoes')
     }
 
     const corrigir1 = () => {
@@ -184,29 +232,28 @@ export default function Batalha() {
 
             if (selectedRound == '1') {
                 if (round == 1) {
-                    salvarRound()
-
+                    openModalSalvarBatalha()
                 } else {
-                    openAlertSalvarBatalha()
+                    openModalSalvarBatalha()
                 }
-
+            } else if (selectedRound == '2') {
+                if (round < 1) {
+                    openModalSalvarRound()
+                }
+                else {
+                    openModalSalvarBatalha()
+                }
             } else if (selectedRound == '3') {
                 if (round < 2) {
-                    salvarRound()
+                    openModalSalvarRound()
                 } else {
-                    openAlertSalvarBatalha()
-                }
-            } else if (selectedRound == '4') {
-                if (round < 3) {
-                    salvarRound()
-                } else {
-                    openAlertSalvarBatalha()
+                    openModalSalvarBatalha()
                 }
             } else if (selectedRound == '5') {
                 if (round < 4) {
-                    salvarRound()
+                    openModalSalvarRound()
                 } else {
-
+                    openModalSalvarBatalha()
                 }
             } else {
                 Alert.alert('Erro', 'Rounds disponíveis Não especificados')
@@ -217,44 +264,25 @@ export default function Batalha() {
         }
     }
     const salvarRound = () => {
-        if (mc1RoundsVencidos == 2 && selectedRound == '3') {
-            openAlertSalvarBatalha()
-        } else if (mc2RoundsVencidos == 2 && selectedRound == '3') {
-            openAlertSalvarBatalha()
-        } else if (mc1RoundsVencidos == 3 && selectedRound == '4') {
-            openAlertSalvarBatalha()
-        } else if (mc2RoundsVencidos == 3 && selectedRound == '4') {
-            openAlertSalvarBatalha()
-        } else if (mc1RoundsVencidos == 3 && selectedRound == '5') {
-            openAlertSalvarBatalha()
-        } else if (mc2RoundsVencidos == 3 && selectedRound == '5') {
-            salvarBatalha()
-        } else {
-            setPonto1(0)
-            setPonto2(0)
-            setPalco1(0)
-            setTecnica1(0)
-            setFlow1(0)
-            setPalco2(0)
-            setTecnica2(0)
-            setFlow2(0)
-            setbotoesEspeciais(false)
-            setRound(round + 1)
-        }
 
+
+        setModalSalvarRound(false)
+        setPonto1(0)
+        setPonto2(0)
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+        setbotoesEspeciais(false)
+        setRound(round + 1)
     }
 
     const salvarBatalha = async () => {
 
-
-
-        // Calcula os pontos extras baseados nos pontos especiais
-        const pontosExtrasMC1 = (flowTotal1 + palcoTotal1 + tecnicaTotal1) * 0.5;
-        const pontosExtrasMC2 = (flowTotal2 + palcoTotal2 + tecnicaTotal2) * 0.5;
-
         // Adiciona os pontos extras à pontuação total
-        const pontuacaoFinalMC1 = pontoTotal1 + pontosExtrasMC1;
-        const pontuacaoFinalMC2 = pontoTotal2 + pontosExtrasMC2;
+
 
         const existingData = await AsyncStorage.getItem('batalhas');
         const parsedData = existingData ? JSON.parse(existingData) : [];
@@ -262,8 +290,8 @@ export default function Batalha() {
         const id = UUID.v4();
 
         const newBatalha = {
-            pontoTotal1: pontuacaoFinalMC1, // Usa a pontuação com os extras
-            pontoTotal2: pontuacaoFinalMC2, // Usa a pontuação com os extras
+            pontoTotal1, // Usa a pontuação com os extras
+            pontoTotal2, // Usa a pontuação com os extras
             mc1,
             mc2,
             id,
@@ -290,8 +318,12 @@ export default function Batalha() {
 
 
         // Reseta todos os estados
+
         setIsLoading2(true);
         await new Promise((resolve) => setTimeout(resolve, 1000));
+        setModalSalvarBatalha(false)
+        setModalSalvarRound(false)
+        setTemMcVencedor(false)
         setMc1('')
         setMc2('')
         setPonto1(0)
@@ -387,43 +419,55 @@ export default function Batalha() {
 
 
     const addPalco1 = () => {
-        if (palco1 < 4) {
-            setPalco1(palco1 + 1)
-            setPalcoTotal1(palcoTotal1 + 1)
+        if (palco1 < 2) {
+            setPalco1(palco1 + 0.5)
+            setPalcoTotal1(palcoTotal1 + 0.5)
+            setPonto1(ponto1 + 0.5)
+            setPontoTotal1(pontoTotal1 + 0.5)
         }
     }
     const addPalco2 = () => {
-        if (palco2 < 4) {
-            setPalco2(palco2 + 1)
-            setPalcoTotal2(palcoTotal2 + 1)
+        if (palco2 < 2) {
+            setPalco2(palco2 + 0.5)
+            setPalcoTotal2(palcoTotal2 + 0.5)
+            setPonto2(ponto2 + 0.5)
+            setPontoTotal2(pontoTotal2 + 0.5)
         }
     }
 
     const addTecnica1 = () => {
-        if (tecnica1 < 4) {
-            setTecnica1(tecnica1 + 1)
-            setTecnicaTotal1(tecnicaTotal1 + 1)
+        if (tecnica1 < 2) {
+            setTecnica1(tecnica1 + 0.5)
+            setTecnicaTotal1(tecnicaTotal1 + 0.5)
+            setPonto1(ponto1 + 0.5)
+            setPontoTotal1(pontoTotal1 + 0.5)
         }
     }
 
     const addTecnica2 = () => {
-        if (tecnica2 < 4) {
-            setTecnica2(tecnica2 + 1)
-            setTecnicaTotal2(tecnicaTotal2 + 1)
+        if (tecnica2 < 2) {
+            setTecnica2(tecnica2 + 0.5)
+            setTecnicaTotal2(tecnicaTotal2 + 0.5)
+            setPonto2(ponto2 + 0.5)
+            setPontoTotal2(pontoTotal2 + 0.5)
         }
     }
 
     const addFlow1 = () => {
-        if (flow1 < 4) {
-            setFlow1(flow1 + 1)
-            setFlowTotal1(flowTotal1 + 1)
+        if (flow1 < 2) {
+            setFlow1(flow1 + 0.5)
+            setFlowTotal1(flowTotal1 + 0.5)
+            setPonto1(ponto1 + 0.5)
+            setPontoTotal1(pontoTotal1 + 0.5)
         }
     }
 
     const addFlow2 = () => {
-        if (flow2 < 4) {
-            setFlow2(flow2 + 1)
-            setFlowTotal2(flowTotal2 + 1)
+        if (flow2 < 2) {
+            setFlow2(flow2 + 0.5)
+            setFlowTotal2(flowTotal2 + 0.5)
+            setPonto2(ponto2 + 0.5)
+            setPontoTotal2(pontoTotal2 + 0.5)
         }
     }
 
@@ -523,9 +567,9 @@ export default function Batalha() {
                                 onValueChange={(itemValue) => setSelectedRound(itemValue)} // Atualiza o estado ao selecionar
                                 style={styles.picker}
                             >
-                                <Picker.Item label="1 Rounds" value="1" />
+                                <Picker.Item label="1 Round" value="1" />
+                                <Picker.Item label="2 Rounds" value="2" />
                                 <Picker.Item label="3 Rounds" value="3" />
-                                <Picker.Item label="4 Rounds" value="4" />
                                 <Picker.Item label="5 Rounds" value="5" />
                             </Picker>
                         </View>
@@ -857,7 +901,7 @@ export default function Batalha() {
 
                         {isLoading2 ? (
                             <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color="#ffffff" />                             
+                                <ActivityIndicator size="large" color="#ffffff" />
                             </View>
                         ) : (
                             <>
@@ -876,8 +920,6 @@ export default function Batalha() {
                                     <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalBatalha.helpContainer}>
                                         <Text style={stylesModalBatalha.help}>?</Text>
                                     </TouchableOpacity>
-
-
                                 </View>
                                 <View style={stylesModalBatalha.main}>
 
@@ -970,7 +1012,58 @@ export default function Batalha() {
                                 </View>
 
                                 <TouchableOpacity
-                                    style={stylesModalBatalha.BtnContainer}
+                                    style={[
+                                        stylesModalEspecial.BtnContainer,
+                                        {
+                                            backgroundColor: ((round === 0 && selectedRound === "1") ||
+                                                (round === 1 && selectedRound === "2") ||
+                                                (round === 2 && selectedRound === "3") ||
+                                                (round === 3 && selectedRound === "4"))
+                                                ? 'transparent'
+                                                : 'red',
+                                            opacity: ((round === 0 && selectedRound === "1") ||
+                                                (round === 1 && selectedRound === "2") ||
+                                                (round === 2 && selectedRound === "3") ||
+                                                (round === 3 && selectedRound === "4"))
+                                                ? 0.3
+                                                : 1,
+                                        }
+                                    ]}
+                                    onPress={((round === 0 && selectedRound === "1") ||
+                                        (round === 1 && selectedRound === "2") ||
+                                        (round === 2 && selectedRound === "3") ||
+                                        (round === 3 && selectedRound === "4"))
+                                        ? null
+                                        : openModalSalvarBatalha}
+                                    disabled={(round === 0 && selectedRound === "1") ||
+                                        (round === 1 && selectedRound === "2") ||
+                                        (round === 2 && selectedRound === "3") ||
+                                        (round === 3 && selectedRound === "4") || isLoading}
+                                >
+                                    {isLoading ? (
+                                        <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                        <Text
+                                            style={[
+                                                stylesModalBatalha.BtnText,
+                                                {
+                                                    color: ((round === 0 && selectedRound === "1") ||
+                                                        (round === 1 && selectedRound === "2") ||
+                                                        (round === 2 && selectedRound === "3") ||
+                                                        (round === 3 && selectedRound === "4"))
+                                                        ? 'rgba(255, 255, 255, 0)'
+                                                        : '#FFF'
+                                                }
+                                            ]}
+                                        >
+                                            Encerrar Partida
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
+
+
+                                <TouchableOpacity
+                                    style={stylesModalEspecial.BtnContainer}
                                     onPress={salvar}
                                     disabled={isLoading} // Desativa o botão enquanto carrega
                                 >
@@ -978,12 +1071,18 @@ export default function Batalha() {
                                         <ActivityIndicator size="small" color="#FFF" />
                                     ) : (
                                         <>
+                                            <Text style={stylesModalBatalha.BtnText}>
+                                                {(round === 0 && selectedRound === "1") ||
+                                                    (round === 1 && selectedRound === "2") ||
+                                                    (round === 2 && selectedRound === "3")
+                                                    ? "Salvar Batalha"
+                                                    : `Próximo Round`}
+                                            </Text>
 
-                                            <Text style={stylesModalBatalha.BtnText}>Salvar {round + 1}/{selectedRound}</Text>
                                         </>
                                     )}
                                 </TouchableOpacity>
-                                
+
                             </>
 
                         )}
@@ -1064,6 +1163,64 @@ export default function Batalha() {
                 </View>
             </Modal>
 
+            {/*Modal Salvar Batalha*/}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalSalvarBatalha}
+            >
+                <View style={stylesModalSalvar.modalBackground}>
+                    <View style={stylesModalSalvar.modalContainer}>
+
+                        <Text style={stylesModalSalvar.title}>Salvar batalha no histórico?</Text>
+                        <TouchableOpacity
+                            style={stylesModalSalvar.BtnContainer}
+                            onPress={salvarBatalha}
+
+                        >
+
+                            <Text style={stylesModalSalvar.BtnText}>Sim</Text>
+
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[stylesModalSalvar.BtnContainer, { backgroundColor: 'red' }]}
+                            onPress={closeModalSalvarBatalha}
+
+                        >
+
+                            <Text style={stylesModalSalvar.BtnText}>Não</Text>
+
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/*Modal Salvar Round*/}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalSalvarRound}
+            >
+                <View style={stylesModalSalvar.modalBackground}>
+                    <View style={stylesModalSalvar.modalContainer}>
+                        <Text style={stylesModalSalvar.title}>Seguir para round {round + 2}?</Text>
+                        <TouchableOpacity
+                            style={stylesModalSalvar.BtnContainer}
+                            onPress={salvarRound}
+                        >
+                            <Text style={stylesModalSalvar.BtnText}>Sim</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[stylesModalSalvar.BtnContainer,]}
+                            onPress={closeModalSalvarRound}
+                        >
+
+                            <Text style={stylesModalSalvar.BtnText}>Não</Text>
+
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
             <View style={styles.footer}>
                 <TouchableOpacity
@@ -1176,7 +1333,7 @@ const stylesModalEspecial = StyleSheet.create({
         paddingRight: 30,
         paddingLeft: 30,
         overflow: 'hidden',
-        marginTop: 20,
+        marginTop: 10,
 
         backgroundColor: '#704BFF',
         flexDirection: "row", // Coloca a imagem e o TextInput lado a lado
@@ -1224,15 +1381,24 @@ const stylesModalEspecial = StyleSheet.create({
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'center',
-        height: 373,
-        marginTop: 100,
-        marginBottom: 30,
+        alignItems: 'center',
+        height: 333,
+        marginTop: 75,
+        marginBottom: 10,
     },
-    BtnEspecialContainer: {
-        width: '100%',
-        flexDirection: 'row',
+    BtnContainer: {
+        width: '90%',
+        height: 50,
         justifyContent: 'center',
-        marginBottom: 25,
+        alignItems: 'center',
+        display: 'inline-flex',
+        paddingRight: 30,
+        paddingLeft: 30,
+        overflow: 'hidden',
+        marginTop: 23,
+        backgroundColor: '#704BFF',
+        flexDirection: "row",
+        borderRadius: 6,
     },
     coll: {
         width: '46%',
@@ -1290,7 +1456,6 @@ const stylesModalEspecial = StyleSheet.create({
         width: 154
     },
 })
-
 
 const stylesModalBatalha = StyleSheet.create({
     modalContainer: {
@@ -1352,7 +1517,7 @@ const stylesModalBatalha = StyleSheet.create({
         paddingRight: 30,
         paddingLeft: 30,
         overflow: 'hidden',
-        marginTop: 50,
+        marginTop: 40,
         backgroundColor: '#704BFF',
         flexDirection: "row",
         borderRadius: 6,
@@ -1483,7 +1648,6 @@ const stylesModalBatalha = StyleSheet.create({
 
 })
 
-
 const stylesModalAjuda = StyleSheet.create({
     modalBackground: {
         flex: 1,
@@ -1525,7 +1689,62 @@ const stylesModalAjuda = StyleSheet.create({
     },
 });
 
+const stylesModalSalvar = StyleSheet.create({
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContainer: {
+        width: '90%',
+        height: 350,
+        backgroundColor: '#190a29',
+        borderRadius: 10,
+        padding: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: 25,
+        marginBottom: 10,
+        marginTop: 5,
+        color: '#ffffff',
+    },
+    item: {
+        fontSize: 16,
+        marginVertical: 5,
+        color: '#ffffff',
+        fontFamily: 'Montserrat_400Regular'
+    },
+    BtnContainer: {
+        // Garante que o gradiente não ultrapasse as bordas arredondadas
+        width: '100%',
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        display: 'inline-flex',
+        paddingRight: 30,
+        paddingLeft: 30,
+        overflow: 'hidden',
+        marginTop: 20,
+        backgroundColor: '#704BFF',
+        flexDirection: "row", // Coloca a imagem e o TextInput lado a lado
+        borderRadius: 6,
+    },
+    BtnText: {
+        color: '#ffffff',
+        fontSize: 16, // Tamanho da fonte
+    },
 
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#190a29',
+        height: '90%' // Mesmo height do main
+    },
+});
 
 const styles = StyleSheet.create({
     container: {

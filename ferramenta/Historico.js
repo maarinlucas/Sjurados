@@ -78,11 +78,10 @@ export default function Historico({ data, onDelete }) {
 
   return (
     <View style={styles.batalhas}>
-
       <TouchableOpacity style={styles.batalha} onPress={() => setModalVisible(true)}>
         <View style={styles.nomeMc}>
           <View style={styles.mcContainer}>
-          {(Math.ceil(data.pontoTotal1) > Math.ceil(data.pontoTotal2) || Math.ceil(data.pontoTotal1) === Math.ceil(data.pontoTotal2)) && (
+          { (data.mc1RoundsVencidos > data.mc2RoundsVencidos || data.mc1RoundsVencidos == data.mc2RoundsVencidos) && (
               <Image
                 source={require('../assets/imagens/trofeu.png')}
                 style={[styles.trofeuIcon, { marginRight: 5 }]}
@@ -102,7 +101,7 @@ export default function Historico({ data, onDelete }) {
         <View style={styles.nomeMc}>
           <View style={styles.mcContainer}>
             <Text style={[styles.textMc, { fontFamily: 'Ringstun' }]}>{data.mc2}</Text>
-            {(Math.ceil(data.pontoTotal2) > Math.ceil(data.pontoTotal1) || Math.ceil(data.pontoTotal1) === Math.ceil(data.pontoTotal2)) && (
+            {(data.mc2RoundsVencidos > data.mc1RoundsVencidos || data.mc2RoundsVencidos == data.mc1RoundsVencidos) && (
               <Image
                 source={require('../assets/imagens/trofeu.png')}
                 style={[styles.trofeuIcon, { marginLeft: 5 }]}
@@ -163,7 +162,7 @@ export default function Historico({ data, onDelete }) {
                   )}
                 </View>
                 <View style={[styles.mcName, { marginTop: 15, fontSize: 20, fontFamily: 'sans-serif', fontWeight: 'bold', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}>
-                  {(data.pontoTotal1 > data.pontoTotal2 || data.pontoTotal1 === data.pontoTotal2) && (
+                  {(data.mc1RoundsVencidos > data.mc2RoundsVencidos || data.mc1RoundsVencidos == data.mc2RoundsVencidos) && (
                     <Image
                       source={require('../assets/imagens/trofeu.png')}
                       style={styles.trofeuIcon2a}
@@ -192,7 +191,7 @@ export default function Historico({ data, onDelete }) {
                 </View>
                 <View style={[styles.mcName, { marginTop: 15, fontSize: 20, fontFamily: 'sans-serif', fontWeight: 'bold', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]}>
                   <Text style={styles.mcName}>{data.mc2}</Text>
-                  {(data.pontoTotal2 > data.pontoTotal1 || data.pontoTotal1 === data.pontoTotal2) && (
+                  {(data.mc2RoundsVencidos > data.mc1RoundsVencidos || data.mc2RoundsVencidos == data.mc1RoundsVencidos) && (
                     <Image
                       source={require('../assets/imagens/trofeu.png')}
                       style={styles.trofeuIcon2b}
