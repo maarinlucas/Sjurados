@@ -594,6 +594,7 @@ export default function Batalha() {
             {/*Modal Batalha */}
             <Modal
                 visible={modalVisible}
+                animationType="none"
             >
                 <View style={stylesModalBatalha.modalContainer}>
                     <View style={stylesModalBatalha.modalContent}>
@@ -890,10 +891,10 @@ export default function Batalha() {
                 </View>
             </Modal>
 
-
             {/*Modal Botões Especiais */}
             <Modal
                 visible={botoesEspeciais}
+                animationType="none"
 
             >
                 <View style={stylesModalEspecial.modalEspecialOverlay}>
@@ -1018,13 +1019,13 @@ export default function Batalha() {
                                             backgroundColor: ((round === 0 && selectedRound === "1") ||
                                                 (round === 1 && selectedRound === "2") ||
                                                 (round === 2 && selectedRound === "3") ||
-                                                (round === 3 && selectedRound === "4"))
+                                                (round === 5 && selectedRound === "5"))
                                                 ? 'transparent'
                                                 : 'red',
                                             opacity: ((round === 0 && selectedRound === "1") ||
                                                 (round === 1 && selectedRound === "2") ||
                                                 (round === 2 && selectedRound === "3") ||
-                                                (round === 3 && selectedRound === "4"))
+                                                (round === 5 && selectedRound === "5"))
                                                 ? 0.3
                                                 : 1,
                                         }
@@ -1032,13 +1033,13 @@ export default function Batalha() {
                                     onPress={((round === 0 && selectedRound === "1") ||
                                         (round === 1 && selectedRound === "2") ||
                                         (round === 2 && selectedRound === "3") ||
-                                        (round === 3 && selectedRound === "4"))
+                                        (round === 5 && selectedRound === "5"))
                                         ? null
                                         : openModalSalvarBatalha}
                                     disabled={(round === 0 && selectedRound === "1") ||
                                         (round === 1 && selectedRound === "2") ||
                                         (round === 2 && selectedRound === "3") ||
-                                        (round === 3 && selectedRound === "4") || isLoading}
+                                        (round === 5 && selectedRound === "5") || isLoading}
                                 >
                                     {isLoading ? (
                                         <ActivityIndicator size="small" color="#FFF" />
@@ -1050,13 +1051,13 @@ export default function Batalha() {
                                                     color: ((round === 0 && selectedRound === "1") ||
                                                         (round === 1 && selectedRound === "2") ||
                                                         (round === 2 && selectedRound === "3") ||
-                                                        (round === 3 && selectedRound === "4"))
+                                                        (round === 4 && selectedRound === "5"))
                                                         ? 'rgba(255, 255, 255, 0)'
                                                         : '#FFF'
                                                 }
                                             ]}
                                         >
-                                            Encerrar Partida
+                                            Encerrar Batalha
                                         </Text>
                                     )}
                                 </TouchableOpacity>
