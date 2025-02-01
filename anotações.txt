@@ -1,12 +1,19 @@
 cd C:\Users\lucas\Desktop\s_jurados 
 
+npx expo build:android
+
+
+Antes do build:
+npx expo prebuild
+
+Build:
 npx eas-cli login
 npx eas-cli build -p android --profile preview
 npx eas-cli build -p android --profile production
+atualizar:
+npx eas-cli update --branch production --message "Correção de bugs e melhorias"
 
-npx expo prebuild
 
-npx expo build:android
 
 
 

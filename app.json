@@ -13,7 +13,10 @@
       "backgroundColor": "#371b72"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +25,7 @@
       },
       "package": "com.seuusername.s_jurados",
       "permissions": [
+        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ],
       "intentFilters": [
@@ -30,9 +34,23 @@
           "data": {
             "scheme": "mailto"
           },
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "data": {
+            "scheme": "mailto"
+          },
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
-      ]
+      ],
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -50,6 +68,9 @@
       "eas": {
         "projectId": "5c550b35-c94a-40b1-af67-253768ccde2e"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5c550b35-c94a-40b1-af67-253768ccde2e"
     }
   }
 }

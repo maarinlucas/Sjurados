@@ -1183,7 +1183,7 @@ export default function Batalha() {
 
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[stylesModalSalvar.BtnContainer, { backgroundColor: 'red' }]}
+                            style={[stylesModalSalvar.BtnContainer]}
                             onPress={closeModalSalvarBatalha}
 
                         >
