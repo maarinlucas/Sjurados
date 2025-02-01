@@ -10,6 +10,8 @@ Build:
 npx eas-cli login
 npx eas-cli build -p android --profile preview
 npx eas-cli build -p android --profile production
+
+
 atualizar:
 npx eas-cli update --branch production --message "Correção de bugs e melhorias"
 
