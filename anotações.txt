@@ -14,6 +14,9 @@ atualizar:
 npx eas-cli update --branch production --message "Correção de bugs e melhorias"
 
 
+git push origin production
+git push origin main
+
 
 
 
