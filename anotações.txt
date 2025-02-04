@@ -2,6 +2,26 @@ cd C:\Users\lucas\Desktop\s_jurados
 
 npx expo build:android
 
+import { AdMobInterstitial } from 'react-native-google-mobile-ads';
+
+AdMobInterstitial.setAdUnitID('ca-app-pub-xxxxxxxxxx/xxxxxxxxxx'); // Seu ID do bloco de anúncios
+AdMobInterstitial.addEventListener('adLoaded', () => {
+  console.log('Anúncio intersticial carregado');
+});
+AdMobInterstitial.addEventListener('adFailedToLoad', (error) => {
+  console.error('Falha ao carregar anúncio intersticial:', error);
+});
+AdMobInterstitial.addEventListener('adClosed', () => {
+  console.log('Anúncio intersticial fechado');
+  AdMobInterstitial.requestAd(); // Solicita um novo anúncio após o usuário fechar o anterior
+});
+AdMobInterstitial.requestAd(); // Solicita o primeiro anúncio
+
+// Exiba o anúncio quando for apropriado no seu aplicativo, por exemplo,
+// após o usuário completar uma ação ou passar de nível em um jogo.
+if (AdMobInterstitial.isReady()) {
+  AdMobInterstitial.showAd();
+}
 
 Antes do build:
 npx expo prebuild
@@ -11,6 +31,7 @@ npx eas-cli login
 npx eas-cli build -p android --profile preview
 npx eas-cli build -p android --profile production
 
+AdSense pub-7963964507446950
 
 atualizar:
 npx eas-cli update --branch production --message "Correção de bugs e melhorias"

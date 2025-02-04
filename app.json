@@ -26,7 +26,6 @@
       },
       "package": "com.seuusername.s_jurados",
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ],
       "intentFilters": [
@@ -63,7 +62,8 @@
         {
           "photosPermission": "O aplicativo precisa acessar suas fotos para selecionar imagens das batalhas."
         }
-      ]
+      ],
+      "react-native-google-mobile-ads"
     ],
     "extra": {
       "eas": {

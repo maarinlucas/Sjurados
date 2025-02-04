@@ -318,11 +318,10 @@ export default function Batalha() {
 
 
         // Reseta todos os estados
-
-        setIsLoading2(true);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
         setModalSalvarBatalha(false)
         setModalSalvarRound(false)
+        setIsLoading2(true);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         setTemMcVencedor(false)
         setMc1('')
         setMc2('')
@@ -1019,13 +1018,13 @@ export default function Batalha() {
                                             backgroundColor: ((round === 0 && selectedRound === "1") ||
                                                 (round === 1 && selectedRound === "2") ||
                                                 (round === 2 && selectedRound === "3") ||
-                                                (round === 5 && selectedRound === "5"))
+                                                (round === 4 && selectedRound === "5"))
                                                 ? 'transparent'
                                                 : 'red',
                                             opacity: ((round === 0 && selectedRound === "1") ||
                                                 (round === 1 && selectedRound === "2") ||
                                                 (round === 2 && selectedRound === "3") ||
-                                                (round === 5 && selectedRound === "5"))
+                                                (round === 4 && selectedRound === "5"))
                                                 ? 0.3
                                                 : 1,
                                         }
@@ -1033,13 +1032,13 @@ export default function Batalha() {
                                     onPress={((round === 0 && selectedRound === "1") ||
                                         (round === 1 && selectedRound === "2") ||
                                         (round === 2 && selectedRound === "3") ||
-                                        (round === 5 && selectedRound === "5"))
+                                        (round === 4 && selectedRound === "5"))
                                         ? null
                                         : openModalSalvarBatalha}
                                     disabled={(round === 0 && selectedRound === "1") ||
                                         (round === 1 && selectedRound === "2") ||
                                         (round === 2 && selectedRound === "3") ||
-                                        (round === 5 && selectedRound === "5") || isLoading}
+                                        (round === 4 && selectedRound === "5") || isLoading}
                                 >
                                     {isLoading ? (
                                         <ActivityIndicator size="small" color="#FFF" />
@@ -1075,7 +1074,8 @@ export default function Batalha() {
                                             <Text style={stylesModalBatalha.BtnText}>
                                                 {(round === 0 && selectedRound === "1") ||
                                                     (round === 1 && selectedRound === "2") ||
-                                                    (round === 2 && selectedRound === "3")
+                                                    (round === 2 && selectedRound === "3")||
+                                                    (round === 4 && selectedRound === "5")
                                                     ? "Salvar Batalha"
                                                     : `Próximo Round`}
                                             </Text>
