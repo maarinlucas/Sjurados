@@ -37,8 +37,8 @@ atualizar:
 npx eas-cli update --branch production --message "Correção de bugs e melhorias"
 
 
-git push origin production
-git push origin main
+
+
 
 
 
@@ -49,5 +49,5 @@ git commit -m "first commit"
 git branch -M main
 git remote add origin https://github.com/maarinlucas/Sjurados.git
 git push -u origin main
-
+git push origin production
 
