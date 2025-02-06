@@ -7,8 +7,10 @@ import Login from "./Login";
 import Cadastro from "./Cadastro";
 import Home from "./ferramenta/Home";
 import Opcoes from "./ferramenta/Opcoes";
-import Batalha from "./ferramenta/Batalha";
+import { Batalha } from "./ferramenta/Batalha";
 import Recuperar from "./Recuperar";
+import { Pontuacao } from "./ferramenta/Batalha";
+
 
 
 const Stack = createNativeStackNavigator();
@@ -26,6 +28,7 @@ export default function Routes() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Opcoes" component={Opcoes} />
         <Stack.Screen name="Batalha" component={Batalha} />
+        <Stack.Screen name="Pontuacao" component={Pontuacao} />
         <Stack.Screen name="Recuperar" component={Recuperar} />
       </Stack.Navigator>
     </NavigationContainer>

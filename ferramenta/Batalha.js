@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Modal, TextInput, Alert, ScrollView } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import { Montserrat_400Regular, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { useNavigation } from "@react-navigation/native";
-import { auth } from '../firebase/index'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from '@react-native-picker/picker';
 
@@ -13,50 +11,246 @@ import Historico from './Historico'
 import UUID from 'react-native-uuid';
 
 
-export default function Batalha() {
-    const [activeButton, setActiveButton] = useState('Adicionar Batalha');
+export function Batalha({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
-    const [isLoading2, setIsLoading2] = useState(false);
+
     const [isFocused, setIsFocused] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [botoesEspeciais, setbotoesEspeciais] = useState(false);
-    const [modalSalvarBatalha, setModalSalvarBatalha] = useState(false);
-    const [modalSalvarRound, setModalSalvarRound] = useState(false);
-    const [ajuda, setAjuda] = useState(false);
-    const [data, setData] = useState(new Date().toLocaleDateString());
-
-    const handleOpenModalAjuda = () => setAjuda(true);
-    const handleCloseModalAjuda = () => setAjuda(false);
-
-
-
+    const [activeButton, setActiveButton] = useState('Adicionar Batalha');
 
     const [fontsLoaded] = useFonts({
         Montserrat_400Regular, // Regular (normal weight)
         Montserrat_700Bold, // Bold weight
         'Ringstun': require("../assets/fonts/ringstun.ttf"),
     });
-
-    const navigation = useNavigation();
-
-    const [ponto1, setPonto1] = useState(0)
-    const [ponto2, setPonto2] = useState(0)
     const [mc1, setMc1] = useState('')
     const [mc2, setMc2] = useState('')
-    const [palco1, setPalco1] = useState(0)
-    const [tecnica1, setTecnica1] = useState(0)
-    const [flow1, setFlow1] = useState(0)
-    const [palco2, setPalco2] = useState(0)
-    const [tecnica2, setTecnica2] = useState(0)
-    const [flow2, setFlow2] = useState(0)
-    const [round, setRound] = useState(0);
-    const [selectedRound, setSelectedRound] = useState("3");
+
+    const [selectedRound, setSelectedRound] = useState("Sem Limite");
+
+
+    const openAlertConfirmar = () => {
+        if (mc1 == '' || mc2 == '') {
+            Alert.alert('Erro', 'Você precisa preencher todos os campos.', [
+                { text: 'OK', style: 'cancel' },
+            ]);
+        } else {
+            navigation.navigate("Pontuacao", { mc1, mc2, selectedRound });
+
+        }
+
+    }
+
+
 
     const [mc1RoundsVencidos, setMc1RoundsVencidos] = useState(0);
     const [mc2RoundsVencidos, setMc2RoundsVencidos] = useState(0);
     const [temMcVencedor, setTemMcVencedor] = useState(false);
 
 
+
+
+
+    const navigateHome = async () => {
+        setActiveButton('Home')
+        navigation.navigate('Home')
+    }
+
+    const navigateOpcoes = () => {
+        setActiveButton('Opções')
+        navigation.navigate('Opcoes')
+    }
+
+
+
+    return (
+
+        <View style={styles.container}>
+            {isLoading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#ffffff" />
+                </View>
+            ) : (
+                <View style={styles.main}>
+                    <View style={styles.parte1}>
+                        <Text style={styles.textMain}>Adicionar Batalha</Text>
+                        <Text style={styles.text}>Preencha as informações necessárias</Text>
+                    </View>
+                    <View style={styles.parte2}>
+
+                        <View style={styles.inputContainer}>
+                            <TextInput
+
+                                style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+                                placeholder="Mc 1"
+                                placeholderTextColor="#A0A0A0"
+                                onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
+                                onBlur={() => setIsFocused(false)} // Restaura a borda quando 
+                                // perde o foco
+                                onChangeText={(text) => setMc1(text)}
+                                maxLength={11} // Adicione esta linha
+                                value={mc1}
+
+
+                            />
+                            <TouchableOpacity>
+                                <Image
+                                    source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
+                                    style={styles.inputIcon}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+
+                                style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
+                                placeholder="Mc 2"
+                                placeholderTextColor="#A0A0A0"
+                                onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
+                                onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
+                                onChangeText={(text) => setMc2(text)}
+                                maxLength={11} // Adicione esta linha
+                                value={mc2}
+                            />
+                            <TouchableOpacity>
+                                <Image
+                                    source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
+                                    style={styles.inputIcon}
+                                />
+                            </TouchableOpacity>
+
+
+
+
+                        </View>
+                        <Text style={styles.label}>Número de rounds:</Text>
+                        <View style={styles.inputPickerContainer}>
+
+                            <Picker
+                                selectedValue={selectedRound} // Valor atual
+                                onValueChange={(itemValue) => setSelectedRound(itemValue)} // Atualiza o estado ao selecionar
+                                style={styles.picker}
+                            >
+                                <Picker.Item label="Sem Limite" value="Sem Limite" />
+                                <Picker.Item label="1 Round" value="1" />
+                                <Picker.Item label="2 Rounds" value="2" />
+                                <Picker.Item label="3 Rounds" value="3" />
+                                <Picker.Item label="5 Rounds" value="5" />
+                            </Picker>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.BtnContainer}
+                            onPress={openAlertConfirmar}
+                            disabled={isLoading} // Desativa o botão enquanto carrega
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator size="small" color="#FFF" />
+                            ) : (
+                                <>
+
+                                    <Text style={styles.BtnText}>Adicionar</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+
+
+            <View style={styles.footer}>
+                <TouchableOpacity
+                    style={[
+                        styles.navItem,
+                        activeButton === 'Home' && styles.navItemActive,
+                    ]}
+                    onPress={navigateHome}
+                    disabled={isLoading}
+                >
+                    <Image
+                        source={require('../assets/icons/home.png')} // Substitua pelo caminho da sua imagem
+                        style={[
+                            styles.navIcon,
+                            activeButton === 'Home' && styles.navIconActive,
+                        ]}
+                    />
+                    <Text
+                        style={[
+                            styles.navText,
+                            activeButton === 'Home' && styles.navTextActive,
+                        ]}
+                    >
+                        Home
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        styles.navItem,
+                        activeButton === 'Adicionar Batalha' && styles.navItemActive,
+                    ]}
+                    onPress={() => setActiveButton('Adicionar Batalha')}
+                    disabled={isLoading}
+                >
+                    <Image
+                        source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem
+                        style={[
+                            styles.navIcon,
+                            activeButton === 'Adicionar Batalha' && styles.navIconActive,
+                        ]}
+                    />
+                    <Text
+                        style={[
+                            styles.navText,
+                            activeButton === 'Adicionar Batalha' && styles.navTextActive,
+                        ]}
+                    >
+                        Adicionar Batalha
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        styles.navItem,
+                        activeButton === 'Opções' && styles.navItemActive,
+                    ]}
+                    onPress={navigateOpcoes}
+                    disabled={isLoading}
+                >
+                    <Image
+                        source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
+                        style={[
+                            styles.navIcon,
+                            activeButton === 'Opções' && styles.navIconActive,
+                        ]}
+                    />
+                    <Text
+                        style={[
+                            styles.navText,
+                            activeButton === 'Opções' && styles.navTextActive,
+                        ]}
+                    >
+                        Opções
+                    </Text>
+                </TouchableOpacity>
+
+
+            </View>
+
+        </View>
+    );
+}
+
+export function Pontuacao({ route, navigation }) {
+    const { mc1, mc2, selectedRound } = route.params || {};
+
+    const [ponto1, setPonto1] = useState(0)
+    const [ponto2, setPonto2] = useState(0)
+    const [palco1, setPalco1] = useState(0)
+    const [tecnica1, setTecnica1] = useState(0)
+    const [flow1, setFlow1] = useState(0)
+    const [palco2, setPalco2] = useState(0)
+    const [tecnica2, setTecnica2] = useState(0)
+    const [flow2, setFlow2] = useState(0)
 
     const [pontoTotal1, setPontoTotal1] = useState(0)
     const [pontoTotal2, setPontoTotal2] = useState(0)
@@ -68,11 +262,40 @@ export default function Batalha() {
     const [flowTotal2, setFlowTotal2] = useState(0)
 
 
+    const [round, setRound] = useState(0);
+    const [mc1RoundsVencidos, setMc1RoundsVencidos] = useState(0);
+    const [mc2RoundsVencidos, setMc2RoundsVencidos] = useState(0);
+    const [ajuda, setAjuda] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading2, setIsLoading2] = useState(true);
 
 
+
+    const [botoesEspeciais, setbotoesEspeciais] = useState(false);
+    const [modalSalvarBatalha, setModalSalvarBatalha] = useState(false);
+    const [modalSalvarRound, setModalSalvarRound] = useState(false);
 
 
     const [batalhas, setBatalha] = useState([]);
+
+    const handleOpenModalAjuda = () => setAjuda(true);
+    const handleCloseModalAjuda = () => setAjuda(false);
+
+
+  
+
+    useEffect(() => {
+        setIsLoading2(false)
+    }, []);
+
+    const [data, setData] = useState(new Date().toLocaleDateString());
+
+
+    const [fontsLoaded] = useFonts({
+        Montserrat_400Regular, // Regular (normal weight)
+        Montserrat_700Bold, // Bold weight
+        'Ringstun': require("../assets/fonts/ringstun.ttf"),
+    });
 
 
 
@@ -80,6 +303,23 @@ export default function Batalha() {
         setModalVisible(true);
     };
 
+
+
+
+    const zerarPontosEspeciais = () => {
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+        setPalcoTotal1(palcoTotal1 - palco1)
+        setPalcoTotal2(palcoTotal2 - palco2)
+        setTecnicaTotal1(tecnicaTotal1 - tecnica1)
+        setTecnicaTotal2(tecnicaTotal2 - tecnica2)
+        setFlowTotal1(flowTotal1 - flow1)
+        setFlowTotal2(flowTotal2 - flow2)
+    }
 
 
 
@@ -159,73 +399,6 @@ export default function Batalha() {
 
 
 
-    const openAlertConfirmar = () => {
-        if (mc1 == '' || mc2 == '') {
-            Alert.alert('Erro', 'Você precisa preencher todos os campos.', [
-                { text: 'OK', style: 'cancel' },
-            ]);
-        } else {
-            openModalBatalha()
-
-        }
-
-    }
-    const openAlertZerarEspeciais = () => {
-        Alert.alert('Zerar', 'Deseja zerar os pontos?', [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Zerar', onPress: () => { zerarPontosEspeciais() } }
-        ]);
-    }
-    const openAlertZerarPontos = () => {
-        Alert.alert('Zerar', 'Zerar os pontos?', [
-            { text: 'Não', style: 'cancel' },
-            { text: 'Sim', onPress: () => { zerarPontos() } }
-        ]);
-    }
-
-
-    const openAlertBack = () => {
-        Alert.alert('Voltar', 'Desafazer as alterações e voltar para a tela anterior?', [
-            { text: 'Não', style: 'cancel' },
-            { text: 'Sim', onPress: () => { zerarTudo() } }
-        ]);
-    }
-
-    const closeModal = () => {
-        setModalVisible(false);
-        zerarTudo()
-    };
-
-
-    /*   const criarBatalha = async () => {
-          setIsLoading(true);
-          // Simula uma operação assíncrona antes de navegar
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          setIsLoading(false);
-          navigation.navigate("Inicio");
-      }
-   */
-
-    const navigateHome = async () => {
-        setActiveButton('Home')
-        navigation.navigate('Home')
-    }
-
-    const navigateOpcoes = () => {
-        setActiveButton('Opções')
-        navigation.navigate('Opcoes')
-    }
-
-    const corrigir1 = () => {
-        setPonto1(ponto1 - 0.25)
-        setPontoTotal1(pontoTotal1 - 0.25)
-    }
-    const corrigir2 = () => {
-        setPonto2(ponto2 - 0.25)
-        setPontoTotal2(pontoTotal2 - 0.25)
-    }
-
-    //Salvar rounds e batalha
     const salvar = async () => {
 
         try {
@@ -256,7 +429,11 @@ export default function Batalha() {
                     openModalSalvarBatalha()
                 }
             } else {
-                Alert.alert('Erro', 'Rounds disponíveis Não especificados')
+                if (round < 999) {
+                    openModalSalvarRound()
+                } else {
+                    openModalSalvarBatalha()
+                }
             }
 
         } catch (error) {
@@ -307,7 +484,7 @@ export default function Batalha() {
         };
 
         const updatedData = [...parsedData, newBatalha];
-        setModalVisible(false)
+       
 
         await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData));
         setBatalha(updatedData);
@@ -318,13 +495,12 @@ export default function Batalha() {
 
 
         // Reseta todos os estados
+        setIsLoading2(true);
         setModalSalvarBatalha(false)
         setModalSalvarRound(false)
-        setIsLoading2(true);
+        setbotoesEspeciais(false)
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        setTemMcVencedor(false)
-        setMc1('')
-        setMc2('')
+
         setPonto1(0)
         setPonto2(0)
         setPalco1(0)
@@ -341,78 +517,11 @@ export default function Batalha() {
         setTecnicaTotal2(0);
         setFlowTotal1(0);
         setFlowTotal2(0);
-        setSelectedRound('3');
         setRound(0);
         setMc1RoundsVencidos(0);
         setMc2RoundsVencidos(0);
-        setbotoesEspeciais(false)
-        setIsLoading2(false);
-    }
+        navigation.navigate('Batalha')
 
-
-
-    const zerarPontos = () => {
-        setPonto1(0)
-        setPonto2(0)
-        setPontoTotal1(pontoTotal1 - ponto1)
-        setPontoTotal2(pontoTotal2 - ponto2)
-    }
-
-    const zerarPontosEspeciais = () => {
-        setPalco1(0)
-        setTecnica1(0)
-        setFlow1(0)
-        setPalco2(0)
-        setTecnica2(0)
-        setFlow2(0)
-        setPalcoTotal1(palcoTotal1 - palco1)
-        setPalcoTotal2(palcoTotal2 - palco2)
-        setTecnicaTotal1(tecnicaTotal1 - tecnica1)
-        setTecnicaTotal2(tecnicaTotal2 - tecnica2)
-        setFlowTotal1(flowTotal1 - flow1)
-        setFlowTotal2(flowTotal2 - flow2)
-    }
-
-    const zerarTudo = () => {
-        setModalVisible(false)
-        setPonto1(0)
-        setPonto2(0)
-        setPalco1(0)
-        setTecnica1(0)
-        setFlow1(0)
-        setPalco2(0)
-        setTecnica2(0)
-        setFlow2(0)
-        setPontoTotal1(0)
-        setPontoTotal2(0)
-        setPalcoTotal1(0)
-        setPalcoTotal2(0)
-        setTecnicaTotal1(0)
-        setTecnicaTotal2(0)
-        setFlowTotal1(0)
-        setFlowTotal2(0)
-        setRound(0)
-        setSelectedRound('3')
-        setMc1('')
-        setMc2('')
-    }
-
-    const addPonto1 = (p) => {
-        const novaPontuacao = ponto1 + p;
-        const novaPontuacaoTotal = pontoTotal1 + p;
-
-        if (novaPontuacao <= 100) {
-            setPonto1(novaPontuacao);
-            setPontoTotal1(novaPontuacaoTotal);
-        }
-    }
-    const addPonto2 = (p) => {
-        const novaPontuacao = ponto2 + p;
-        const novaPontuacaoTotal = pontoTotal2 + p;
-        if (novaPontuacao <= 100) {
-            setPonto2(novaPontuacao);
-            setPontoTotal2(novaPontuacaoTotal);
-        }
     }
 
 
@@ -472,6 +581,14 @@ export default function Batalha() {
 
 
 
+    const openAlertZerarEspeciais = () => {
+        Alert.alert('Zerar', 'Deseja zerar os pontos?', [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Zerar', onPress: () => { zerarPontosEspeciais() } }
+        ]);
+    }
+
+
     let p1 = 0.25
     let p2 = 0.50
     let p3 = 0.75
@@ -498,427 +615,408 @@ export default function Batalha() {
     const c7 = '#563997'
     const c8 = '#422b73'
 
-    return (
+    const zerarPontos = () => {
+        setPonto1(0)
+        setPonto2(0)
+        setPontoTotal1(pontoTotal1 - ponto1)
+        setPontoTotal2(pontoTotal2 - ponto2)
+    }
+    const corrigir1 = () => {
+        setPonto1(ponto1 - 0.25)
+        setPontoTotal1(pontoTotal1 - 0.25)
+    }
+    const corrigir2 = () => {
+        setPonto2(ponto2 - 0.25)
+        setPontoTotal2(pontoTotal2 - 0.25)
+    }
 
-        <View style={styles.container}>
-            {isLoading ? (
+    const back = () => {
+        navigation.navigate('Batalha')
+        setPonto1(0)
+        setPonto2(0)
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+        setPontoTotal1(0)
+        setPontoTotal2(0)
+        setPalcoTotal1(0)
+        setPalcoTotal2(0)
+        setTecnicaTotal1(0)
+        setTecnicaTotal2(0)
+        setFlowTotal1(0)
+        setFlowTotal2(0)
+
+    }
+    const back2 = () => {
+        setbotoesEspeciais(false)
+        setPalco1(0)
+        setTecnica1(0)
+        setFlow1(0)
+        setPalco2(0)
+        setTecnica2(0)
+        setFlow2(0)
+    }
+
+
+    const openAlertZerarPontos = () => {
+        Alert.alert('Zerar', 'Zerar os pontos?', [
+            { text: 'Não', style: 'cancel' },
+            { text: 'Sim', onPress: () => { zerarPontos() } }
+        ]);
+    }
+
+
+    const openAlertBack = () => {
+        Alert.alert('Voltar', 'Desafazer as alterações e voltar para a tela anterior?', [
+            { text: 'Não', style: 'cancel' },
+            { text: 'Sim', onPress: () => { back() } }
+        ]);
+    }
+    const addPonto1 = (p) => {
+        const novaPontuacao = ponto1 + p;
+        const novaPontuacaoTotal = pontoTotal1 + p;
+
+        if (novaPontuacao <= 100) {
+            setPonto1(novaPontuacao);
+            setPontoTotal1(novaPontuacaoTotal);
+        }
+    }
+    const addPonto2 = (p) => {
+        const novaPontuacao = ponto2 + p;
+        const novaPontuacaoTotal = pontoTotal2 + p;
+        if (novaPontuacao <= 100) {
+            setPonto2(novaPontuacao);
+            setPontoTotal2(novaPontuacaoTotal);
+        }
+    }
+
+
+    return (
+        <View style={stylesModalBatalha.modalContainer}>
+
+            {isLoading2 ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#ffffff" />
                 </View>
+                
             ) : (
-                <View style={styles.main}>
-                    <View style={styles.parte1}>
-                        <Text style={styles.textMain}>Adicionar Batalha</Text>
-                        <Text style={styles.text}>Preencha as informações necessárias</Text>
-                    </View>
-                    <View style={styles.parte2}>
+                <>
+                    <View style={stylesModalBatalha.modalContainer}>
+                        <View style={stylesModalBatalha.modalContent}>
 
-                        <View style={styles.inputContainer}>
-                            <TextInput
-
-                                style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
-                                placeholder="Mc 1"
-                                placeholderTextColor="#A0A0A0"
-                                onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-                                onBlur={() => setIsFocused(false)} // Restaura a borda quando 
-                                // perde o foco
-                                onChangeText={(text) => setMc1(text)}
-                                maxLength={11} // Adicione esta linha
-                                value={mc1}
+                            <View style={stylesModalBatalha.header}>
+                                <TouchableOpacity style={stylesModalBatalha.back} onPress={openAlertBack}>
+                                    <Image
+                                        source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
+                                        style={stylesModalBatalha.img}
+                                    />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={stylesModalBatalha.btnZerar} onPress={openAlertZerarPontos}>
+                                    <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalBatalha.helpContainer}>
+                                    <Text style={stylesModalBatalha.help}>?</Text>
+                                </TouchableOpacity>
 
 
-                            />
-                            <TouchableOpacity>
-                                <Image
-                                    source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
-                                    style={styles.inputIcon}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <TextInput
+                            </View>
 
-                                style={[styles.input, isFocused && styles.inputFocused]} // Aplica o estilo condicional
-                                placeholder="Mc 2"
-                                placeholderTextColor="#A0A0A0"
-                                onFocus={() => setIsFocused(true)} // Remove a borda quando o input está em foco
-                                onBlur={() => setIsFocused(false)} // Restaura a borda quando perde o foco
-                                onChangeText={(text) => setMc2(text)}
-                                maxLength={11} // Adicione esta linha
-                                value={mc2}
-                            />
-                            <TouchableOpacity>
-                                <Image
-                                    source={require("../assets/imagens/nome.png")} // Substitua pelo caminho da sua imagem
-                                    style={styles.inputIcon}
-                                />
-                            </TouchableOpacity>
+                            <View style={stylesModalBatalha.main}>
+
+                                <View style={stylesModalBatalha.nomes}>
+
+                                    <View style={stylesModalBatalha.nome}>
+                                        <Text style={stylesModalBatalha.textNome}>{mc1}</Text>
+                                    </View>
+
+                                    <View style={stylesModalBatalha.separadorContainer}>
+                                        <Text style={stylesModalBatalha.separador}></Text>
+                                    </View>
+
+                                    <View style={stylesModalBatalha.nome}>
+                                        <Text style={stylesModalBatalha.textNome}>{mc2}</Text>
+                                    </View>
+
+                                </View>
+
+                                <View style={stylesModalBatalha.pontos}>
+
+                                    <View style={stylesModalBatalha.ponto}>
+                                        <Text style={stylesModalBatalha.textPonto}>{ponto1}</Text>
+                                    </View>
+
+                                    <View style={stylesModalBatalha.separadorContainer}>
+                                        <Text style={stylesModalBatalha.separador}>|</Text>
+                                    </View>
+
+                                    <View style={stylesModalBatalha.ponto}>
+                                        <Text style={stylesModalBatalha.textPonto}>{ponto2}</Text>
+                                    </View>
+
+                                </View>
+
+                            </View>
+
+                            <View style={stylesModalBatalha.btnsPonto}>
+
+                                <View style={stylesModalBatalha.coll}>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c1
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p1)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p1}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c1
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p2)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p2}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c2
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p3)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p3}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c2
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p4)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p4}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c3
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p5)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p5}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c3
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p6)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p6}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c4
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p7)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p7}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c4
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p8)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p8}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c5
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p9)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p9}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c5
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p10)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p10}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c6
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p11)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p11}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c6
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p12)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p12}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c7
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p13)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p13}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c7
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p14)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p14}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c8
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p15)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p15}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c8
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p16)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p16}</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
 
+                                    <View style={stylesModalBatalha.row}>
 
+                                        <TouchableOpacity onPress={corrigir1} style={stylesModalBatalha.correcao}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>Corrigir</Text>
+                                        </TouchableOpacity>
 
-                        </View>
-                        <Text style={styles.label}>Número de rounds:</Text>
-                        <View style={styles.inputPickerContainer}>
-
-                            <Picker
-                                selectedValue={selectedRound} // Valor atual
-                                onValueChange={(itemValue) => setSelectedRound(itemValue)} // Atualiza o estado ao selecionar
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="1 Round" value="1" />
-                                <Picker.Item label="2 Rounds" value="2" />
-                                <Picker.Item label="3 Rounds" value="3" />
-                                <Picker.Item label="5 Rounds" value="5" />
-                            </Picker>
-                        </View>
-                        <TouchableOpacity
-                            style={styles.BtnContainer}
-                            onPress={openAlertConfirmar}
-                            disabled={isLoading} // Desativa o botão enquanto carrega
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator size="small" color="#FFF" />
-                            ) : (
-                                <>
-
-                                    <Text style={styles.BtnText}>Adicionar</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
-
-            {/*Modal Batalha */}
-            <Modal
-                visible={modalVisible}
-                animationType="none"
-            >
-                <View style={stylesModalBatalha.modalContainer}>
-                    <View style={stylesModalBatalha.modalContent}>
-
-                        <View style={stylesModalBatalha.header}>
-                            <TouchableOpacity style={stylesModalBatalha.back} onPress={openAlertBack}>
-                                <Image
-                                    source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
-                                    style={stylesModalBatalha.img}
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={stylesModalBatalha.btnZerar} onPress={openAlertZerarPontos}>
-                                <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalBatalha.helpContainer}>
-                                <Text style={stylesModalBatalha.help}>?</Text>
-                            </TouchableOpacity>
-
-
-                        </View>
-
-                        <View style={stylesModalBatalha.main}>
-
-                            <View style={stylesModalBatalha.nomes}>
-
-                                <View style={stylesModalBatalha.nome}>
-                                    <Text style={stylesModalBatalha.textNome}>{mc1}</Text>
+                                    </View>
                                 </View>
 
                                 <View style={stylesModalBatalha.separadorContainer}>
                                     <Text style={stylesModalBatalha.separador}></Text>
                                 </View>
 
-                                <View style={stylesModalBatalha.nome}>
-                                    <Text style={stylesModalBatalha.textNome}>{mc2}</Text>
+                                <View style={stylesModalBatalha.coll}>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c1
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p1)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p1}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c1
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p2)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p2}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c2
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p3)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p3}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c2
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p4)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p4}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c3
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p5)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p5}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c3
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p6)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p6}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c4
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p7)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p7}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c4
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p8)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p8}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c5
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p9)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p9}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c5
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p10)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p10}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c6
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p11)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p11}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c6
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p12)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p12}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c7
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p13)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p13}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c7
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p14)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p14}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={stylesModalBatalha.row}>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c8
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p15)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p15}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[{
+                                            backgroundColor: c8
+                                        }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p16)}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>{p16}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+
+                                    <View style={stylesModalBatalha.row}>
+
+                                        <TouchableOpacity onPress={corrigir2} style={stylesModalBatalha.correcao}>
+                                            <Text style={stylesModalBatalha.textBtnPonto}>Corrigir</Text>
+                                        </TouchableOpacity>
+
+                                    </View>
                                 </View>
 
                             </View>
 
-                            <View style={stylesModalBatalha.pontos}>
+                            <TouchableOpacity
+                                style={stylesModalBatalha.BtnContainer}
+                                onPress={openModalEspecial}
+                                disabled={isLoading} // Desativa o botão enquanto carrega
+                            >
+                                <Text style={stylesModalBatalha.BtnText}>Flow - Tecnica - Palco</Text>
 
-                                <View style={stylesModalBatalha.ponto}>
-                                    <Text style={stylesModalBatalha.textPonto}>{ponto1}</Text>
-                                </View>
-
-                                <View style={stylesModalBatalha.separadorContainer}>
-                                    <Text style={stylesModalBatalha.separador}>|</Text>
-                                </View>
-
-                                <View style={stylesModalBatalha.ponto}>
-                                    <Text style={stylesModalBatalha.textPonto}>{ponto2}</Text>
-                                </View>
-
-                            </View>
+                            </TouchableOpacity>
 
                         </View>
-
-                        <View style={stylesModalBatalha.btnsPonto}>
-
-                            <View style={stylesModalBatalha.coll}>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c1
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p1)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p1}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c1
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p2)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p2}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c2
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p3)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p3}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c2
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p4)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p4}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c3
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p5)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p5}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c3
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p6)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p6}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c4
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p7)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p7}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c4
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p8)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p8}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c5
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p9)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p9}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c5
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p10)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p10}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c6
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p11)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p11}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c6
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p12)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p12}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c7
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p13)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p13}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c7
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p14)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p14}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c8
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p15)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p15}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c8
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto1(p16)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p16}</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-
-                                <View style={stylesModalBatalha.row}>
-
-                                    <TouchableOpacity onPress={corrigir1} style={stylesModalBatalha.correcao}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>Corrigir</Text>
-                                    </TouchableOpacity>
-
-                                </View>
-                            </View>
-
-                            <View style={stylesModalBatalha.separadorContainer}>
-                                <Text style={stylesModalBatalha.separador}></Text>
-                            </View>
-
-                            <View style={stylesModalBatalha.coll}>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c1
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p1)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p1}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c1
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p2)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p2}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c2
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p3)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p3}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c2
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p4)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p4}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c3
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p5)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p5}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c3
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p6)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p6}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c4
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p7)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p7}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c4
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p8)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p8}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c5
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p9)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p9}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c5
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p10)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p10}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c6
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p11)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p11}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c6
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p12)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p12}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c7
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p13)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p13}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c7
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p14)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p14}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={stylesModalBatalha.row}>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c8
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p15)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p15}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[{
-                                        backgroundColor: c8
-                                    }, stylesModalBatalha.rowBtn]} onPress={() => addPonto2(p16)}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>{p16}</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-
-                                <View style={stylesModalBatalha.row}>
-
-                                    <TouchableOpacity onPress={corrigir2} style={stylesModalBatalha.correcao}>
-                                        <Text style={stylesModalBatalha.textBtnPonto}>Corrigir</Text>
-                                    </TouchableOpacity>
-
-                                </View>
-                            </View>
-
-                        </View>
-
-                        <TouchableOpacity
-                            style={stylesModalBatalha.BtnContainer}
-                            onPress={openModalEspecial}
-                            disabled={isLoading} // Desativa o botão enquanto carrega
-                        >
-                            <Text style={stylesModalBatalha.BtnText}>Flow - Tecnica - Palco</Text>
-
-                        </TouchableOpacity>
-
-
-
                     </View>
-                </View>
-            </Modal>
+                    {/*Modal Especial */}
+                    <Modal 
+                        visible={botoesEspeciais}
+                        animationType="fade"
+                    >
+                        <View style={stylesModalEspecial.modalContainer}>
+                            <View style={stylesModalEspecial.modalContent}>
 
-            {/*Modal Botões Especiais */}
-            <Modal
-                visible={botoesEspeciais}
-                animationType="none"
-
-            >
-                <View style={stylesModalEspecial.modalEspecialOverlay}>
-                    <View style={stylesModalEspecial.modalEspecialContainer}>
-
-                        {isLoading2 ? (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color="#ffffff" />
-                            </View>
-                        ) : (
-                            <>
-                                <View style={stylesModalBatalha.header}>
-                                    <TouchableOpacity style={stylesModalBatalha.back} onPress={closeModalEspecial}>
+                                <View style={stylesModalEspecial.header}>
+                                    <TouchableOpacity style={stylesModalEspecial.back} onPress={back2}>
                                         <Image
                                             source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
-                                            style={stylesModalBatalha.img}
+                                            style={stylesModalEspecial.img}
                                         />
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        style={stylesModalBatalha.btnZerar}
+                                        style={stylesModalEspecial.btnZerar}
                                         onPress={openAlertZerarEspeciais}>
-                                        <Text style={stylesModalBatalha.BtnText}>ZERAR</Text>
+                                        <Text style={stylesModalEspecial.BtnText}>ZERAR</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalBatalha.helpContainer}>
-                                        <Text style={stylesModalBatalha.help}>?</Text>
+                                    <TouchableOpacity onPress={handleOpenModalAjuda} style={stylesModalEspecial.helpContainer}>
+                                        <Text style={stylesModalEspecial.help}>?</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={stylesModalBatalha.main}>
@@ -1018,13 +1116,17 @@ export default function Batalha() {
                                             backgroundColor: ((round === 0 && selectedRound === "1") ||
                                                 (round === 1 && selectedRound === "2") ||
                                                 (round === 2 && selectedRound === "3") ||
-                                                (round === 4 && selectedRound === "5"))
+                                                (round === 4 && selectedRound === "5") ||
+                                                (round === 999 && selectedRound === "Sem Limite")
+                                            )
                                                 ? 'transparent'
                                                 : 'red',
                                             opacity: ((round === 0 && selectedRound === "1") ||
                                                 (round === 1 && selectedRound === "2") ||
                                                 (round === 2 && selectedRound === "3") ||
-                                                (round === 4 && selectedRound === "5"))
+                                                (round === 4 && selectedRound === "5") ||
+                                                (round === 999 && selectedRound === "Sem Limite")
+                                            )
                                                 ? 0.3
                                                 : 1,
                                         }
@@ -1032,13 +1134,16 @@ export default function Batalha() {
                                     onPress={((round === 0 && selectedRound === "1") ||
                                         (round === 1 && selectedRound === "2") ||
                                         (round === 2 && selectedRound === "3") ||
-                                        (round === 4 && selectedRound === "5"))
+                                        (round === 4 && selectedRound === "5") ||
+                                        (round === 999 && selectedRound === "Sem Limite")
+                                    )
                                         ? null
                                         : openModalSalvarBatalha}
                                     disabled={(round === 0 && selectedRound === "1") ||
                                         (round === 1 && selectedRound === "2") ||
                                         (round === 2 && selectedRound === "3") ||
-                                        (round === 4 && selectedRound === "5") || isLoading}
+                                        (round === 4 && selectedRound === "5") ||
+                                        (round === 999 && selectedRound === "Sem Limite") || isLoading}
                                 >
                                     {isLoading ? (
                                         <ActivityIndicator size="small" color="#FFF" />
@@ -1050,7 +1155,9 @@ export default function Batalha() {
                                                     color: ((round === 0 && selectedRound === "1") ||
                                                         (round === 1 && selectedRound === "2") ||
                                                         (round === 2 && selectedRound === "3") ||
-                                                        (round === 4 && selectedRound === "5"))
+                                                        (round === 4 && selectedRound === "5") ||
+                                                        (round === 999 && selectedRound === "Sem Limite")
+                                                    )
                                                         ? 'rgba(255, 255, 255, 0)'
                                                         : '#FFF'
                                                 }
@@ -1074,8 +1181,9 @@ export default function Batalha() {
                                             <Text style={stylesModalBatalha.BtnText}>
                                                 {(round === 0 && selectedRound === "1") ||
                                                     (round === 1 && selectedRound === "2") ||
-                                                    (round === 2 && selectedRound === "3")||
-                                                    (round === 4 && selectedRound === "5")
+                                                    (round === 2 && selectedRound === "3") ||
+                                                    (round === 4 && selectedRound === "5") ||
+                                                    (round === 999 && selectedRound === "Sem Limite")
                                                     ? "Salvar Batalha"
                                                     : `Próximo Round`}
                                             </Text>
@@ -1084,223 +1192,141 @@ export default function Batalha() {
                                     )}
                                 </TouchableOpacity>
 
-                            </>
+                            </View>
+                        </View>
+                    </Modal>
 
-                        )}
-
-
-
-
-                    </View>
-                </View>
-            </Modal>
-
-            {/*Modal Ajuda */}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={ajuda}
-                onRequestClose={handleCloseModalAjuda}
-            >
-                <View style={stylesModalAjuda.modalBackground}>
-                    <View style={stylesModalAjuda.modalContainer}>
-                        <ScrollView>
-                            <Text style={stylesModalAjuda.title}>PRESENÇA DE PALCO / MC</Text>
-                            <Text style={stylesModalAjuda.item}>1. Interação com objetos</Text>
-                            <Text style={stylesModalAjuda.item}>2. Falar sobre a plateia</Text>
-                            <Text style={stylesModalAjuda.item}>3. Falar com a plateia</Text>
-                            <Text style={stylesModalAjuda.item}>4. Falar sobre algo que está acontecendo no ambiente ao vivo</Text>
-                            <Text style={stylesModalAjuda.item}>5. Rimas que vêm com energia/vibe (atraem o público)</Text>
-                            <Text style={stylesModalAjuda.item}>6. Postura dentro e fora das batalhas</Text>
-                            <Text style={stylesModalAjuda.item}>7. Personalidade e estética</Text>
-                            <Text style={stylesModalAjuda.item}>8. Movimentação em palco</Text>
-                            <Text style={stylesModalAjuda.item}>9. Presença de campeão/vencedor (dentro e fora do palco)</Text>
-
-                            <Text style={stylesModalAjuda.title}>FLOW</Text>
-                            <Text style={stylesModalAjuda.item}>1. Cantado</Text>
-                            <Text style={stylesModalAjuda.item}>2. Entonação</Text>
-                            <Text style={stylesModalAjuda.item}>3. Seguir o ritmo do beat (compasso)</Text>
-                            <Text style={stylesModalAjuda.item}>4. Speedflow</Text>
-                            <Text style={stylesModalAjuda.item}>5. Variação</Text>
-                            <Text style={stylesModalAjuda.item}>6. Dicção</Text>
-                            <Text style={stylesModalAjuda.item}>7. Respiração</Text>
-                            <Text style={stylesModalAjuda.item}>8. Entrada boa</Text>
-                            <Text style={stylesModalAjuda.item}>9. Seguir o BPM (boombap, trap, drill, Detroit, etc.)</Text>
-                            <Text style={stylesModalAjuda.item}>10. Lento</Text>
-                            <Text style={stylesModalAjuda.item}>11. Onomatopeia</Text>
-                            <Text style={stylesModalAjuda.item}>12. Controle para chegar na terminação</Text>
-
-                            <Text style={stylesModalAjuda.title}>TÉCNICAS</Text>
-                            <Text style={stylesModalAjuda.item}>1. Paronomásia</Text>
-                            <Text style={stylesModalAjuda.item}>2. Aliteração</Text>
-                            <Text style={stylesModalAjuda.item}>3. Calambur</Text>
-                            <Text style={stylesModalAjuda.item}>4. Wordplay</Text>
-                            <Text style={stylesModalAjuda.item}>5. Anadiplose</Text>
-                            <Text style={stylesModalAjuda.item}>6. Multissilábicas One Two</Text>
-                            <Text style={stylesModalAjuda.item}>7. Esdrújulas</Text>
-                            <Text style={stylesModalAjuda.item}>8. Univocalismo</Text>
-                            <Text style={stylesModalAjuda.item}>9. Derivação</Text>
-                            <Text style={stylesModalAjuda.item}>10. Antanaclase</Text>
-                            <Text style={stylesModalAjuda.item}>11. Retruécano</Text>
-                            <Text style={stylesModalAjuda.item}>12. Ánafora</Text>
-                            <Text style={stylesModalAjuda.item}>13. Antítese</Text>
-                            <Text style={stylesModalAjuda.item}>14. Comparação</Text>
-                            <Text style={stylesModalAjuda.item}>15. Hipérbole</Text>
-                            <Text style={stylesModalAjuda.item}>16. Dilogia</Text>
-                            <Text style={stylesModalAjuda.item}>17. Metáfora</Text>
-                            <Text style={stylesModalAjuda.item}>18. Esquemas</Text>
-                            <Text style={stylesModalAjuda.item}>19. Rimas perfeitas (coerência com fatality)</Text>
-                            <Text style={stylesModalAjuda.item}>20. Métricas</Text>
-                        </ScrollView>
-
-                        <TouchableOpacity
-                            style={styles.BtnContainer}
-                            onPress={handleCloseModalAjuda}
-                            disabled={isLoading} // Desativa o botão enquanto carrega
-                        >
-                            <Text style={styles.BtnText}>Fechar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-            {/*Modal Salvar Batalha*/}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalSalvarBatalha}
-            >
-                <View style={stylesModalSalvar.modalBackground}>
-                    <View style={stylesModalSalvar.modalContainer}>
-
-                        <Text style={stylesModalSalvar.title}>Salvar batalha no histórico?</Text>
-                        <TouchableOpacity
-                            style={stylesModalSalvar.BtnContainer}
-                            onPress={salvarBatalha}
-
-                        >
-
-                            <Text style={stylesModalSalvar.BtnText}>Sim</Text>
-
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[stylesModalSalvar.BtnContainer]}
-                            onPress={closeModalSalvarBatalha}
-
-                        >
-
-                            <Text style={stylesModalSalvar.BtnText}>Não</Text>
-
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-            {/*Modal Salvar Round*/}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalSalvarRound}
-            >
-                <View style={stylesModalSalvar.modalBackground}>
-                    <View style={stylesModalSalvar.modalContainer}>
-                        <Text style={stylesModalSalvar.title}>Seguir para round {round + 2}?</Text>
-                        <TouchableOpacity
-                            style={stylesModalSalvar.BtnContainer}
-                            onPress={salvarRound}
-                        >
-                            <Text style={stylesModalSalvar.BtnText}>Sim</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[stylesModalSalvar.BtnContainer,]}
-                            onPress={closeModalSalvarRound}
-                        >
-
-                            <Text style={stylesModalSalvar.BtnText}>Não</Text>
-
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-            <View style={styles.footer}>
-                <TouchableOpacity
-                    style={[
-                        styles.navItem,
-                        activeButton === 'Home' && styles.navItemActive,
-                    ]}
-                    onPress={navigateHome}
-                    disabled={isLoading}
-                >
-                    <Image
-                        source={require('../assets/icons/home.png')} // Substitua pelo caminho da sua imagem
-                        style={[
-                            styles.navIcon,
-                            activeButton === 'Home' && styles.navIconActive,
-                        ]}
-                    />
-                    <Text
-                        style={[
-                            styles.navText,
-                            activeButton === 'Home' && styles.navTextActive,
-                        ]}
+                    {/*Modal Ajuda */}
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={ajuda}
+                        onRequestClose={handleCloseModalAjuda}
                     >
-                        Home
-                    </Text>
-                </TouchableOpacity>
+                        <View style={stylesModalAjuda.modalBackground}>
+                            <View style={stylesModalAjuda.modalContainer}>
+                                <ScrollView>
+                                    <Text style={stylesModalAjuda.title}>PRESENÇA DE PALCO / MC</Text>
+                                    <Text style={stylesModalAjuda.item}>1. Interação com objetos</Text>
+                                    <Text style={stylesModalAjuda.item}>2. Falar sobre a plateia</Text>
+                                    <Text style={stylesModalAjuda.item}>3. Falar com a plateia</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Falar sobre algo que está acontecendo no ambiente ao vivo</Text>
+                                    <Text style={stylesModalAjuda.item}>5. Rimas que vêm com energia/vibe (atraem o público)</Text>
+                                    <Text style={stylesModalAjuda.item}>6. Postura dentro e fora das batalhas</Text>
+                                    <Text style={stylesModalAjuda.item}>7. Personalidade e estética</Text>
+                                    <Text style={stylesModalAjuda.item}>8. Movimentação em palco</Text>
+                                    <Text style={stylesModalAjuda.item}>9. Presença de campeão/vencedor (dentro e fora do palco)</Text>
 
-                <TouchableOpacity
-                    style={[
-                        styles.navItem,
-                        activeButton === 'Adicionar Batalha' && styles.navItemActive,
-                    ]}
-                    onPress={() => setActiveButton('Adicionar Batalha')}
-                    disabled={isLoading}
-                >
-                    <Image
-                        source={require('../assets/icons/add.png')} // Substitua pelo caminho da sua imagem
-                        style={[
-                            styles.navIcon,
-                            activeButton === 'Adicionar Batalha' && styles.navIconActive,
-                        ]}
-                    />
-                    <Text
-                        style={[
-                            styles.navText,
-                            activeButton === 'Adicionar Batalha' && styles.navTextActive,
-                        ]}
+                                    <Text style={stylesModalAjuda.title}>FLOW</Text>
+                                    <Text style={stylesModalAjuda.item}>1. Cantado</Text>
+                                    <Text style={stylesModalAjuda.item}>2. Entonação</Text>
+                                    <Text style={stylesModalAjuda.item}>3. Seguir o ritmo do beat (compasso)</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Speedflow</Text>
+                                    <Text style={stylesModalAjuda.item}>5. Variação</Text>
+                                    <Text style={stylesModalAjuda.item}>6. Dicção</Text>
+                                    <Text style={stylesModalAjuda.item}>7. Respiração</Text>
+                                    <Text style={stylesModalAjuda.item}>8. Entrada boa</Text>
+                                    <Text style={stylesModalAjuda.item}>9. Seguir o BPM (boombap, trap, drill, Detroit, etc.)</Text>
+                                    <Text style={stylesModalAjuda.item}>10. Lento</Text>
+                                    <Text style={stylesModalAjuda.item}>11. Onomatopeia</Text>
+                                    <Text style={stylesModalAjuda.item}>12. Controle para chegar na terminação</Text>
+
+                                    <Text style={stylesModalAjuda.title}>TÉCNICAS</Text>
+                                    <Text style={stylesModalAjuda.item}>1. Paronomásia</Text>
+                                    <Text style={stylesModalAjuda.item}>2. Aliteração</Text>
+                                    <Text style={stylesModalAjuda.item}>3. Calambur</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Wordplay</Text>
+                                    <Text style={stylesModalAjuda.item}>5. Anadiplose</Text>
+                                    <Text style={stylesModalAjuda.item}>6. Multissilábicas One Two</Text>
+                                    <Text style={stylesModalAjuda.item}>7. Esdrújulas</Text>
+                                    <Text style={stylesModalAjuda.item}>8. Univocalismo</Text>
+                                    <Text style={stylesModalAjuda.item}>9. Derivação</Text>
+                                    <Text style={stylesModalAjuda.item}>10. Antanaclase</Text>
+                                    <Text style={stylesModalAjuda.item}>11. Retruécano</Text>
+                                    <Text style={stylesModalAjuda.item}>12. Ánafora</Text>
+                                    <Text style={stylesModalAjuda.item}>13. Antítese</Text>
+                                    <Text style={stylesModalAjuda.item}>14. Comparação</Text>
+                                    <Text style={stylesModalAjuda.item}>15. Hipérbole</Text>
+                                    <Text style={stylesModalAjuda.item}>16. Dilogia</Text>
+                                    <Text style={stylesModalAjuda.item}>17. Metáfora</Text>
+                                    <Text style={stylesModalAjuda.item}>18. Esquemas</Text>
+                                    <Text style={stylesModalAjuda.item}>19. Rimas perfeitas (coerência com fatality)</Text>
+                                    <Text style={stylesModalAjuda.item}>20. Métricas</Text>
+                                </ScrollView>
+
+                                <TouchableOpacity
+                                    style={styles.BtnContainer}
+                                    onPress={handleCloseModalAjuda}
+                                    disabled={isLoading} // Desativa o botão enquanto carrega
+                                >
+                                    <Text style={styles.BtnText}>Fechar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+
+                    {/*Modal Salvar Batalha*/}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={modalSalvarBatalha}
                     >
-                        Adicionar Batalha
-                    </Text>
-                </TouchableOpacity>
+                        <View style={stylesModalSalvar.modalBackground}>
+                            <View style={stylesModalSalvar.modalContainer}>
 
-                <TouchableOpacity
-                    style={[
-                        styles.navItem,
-                        activeButton === 'Opções' && styles.navItemActive,
-                    ]}
-                    onPress={navigateOpcoes}
-                    disabled={isLoading}
-                >
-                    <Image
-                        source={require('../assets/icons/options.png')} // Substitua pelo caminho da sua imagem
-                        style={[
-                            styles.navIcon,
-                            activeButton === 'Opções' && styles.navIconActive,
-                        ]}
-                    />
-                    <Text
-                        style={[
-                            styles.navText,
-                            activeButton === 'Opções' && styles.navTextActive,
-                        ]}
+                                <Text style={stylesModalSalvar.title}>Salvar batalha no histórico?</Text>
+                                <TouchableOpacity
+                                    style={stylesModalSalvar.BtnContainer}
+                                    onPress={salvarBatalha}
+
+                                >
+
+                                    <Text style={stylesModalSalvar.BtnText}>Sim</Text>
+
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[stylesModalSalvar.BtnContainer]}
+                                    onPress={closeModalSalvarBatalha}
+
+                                >
+
+                                    <Text style={stylesModalSalvar.BtnText}>Não</Text>
+
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+
+                    {/*Modal Salvar Round*/}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={modalSalvarRound}
                     >
-                        Opções
-                    </Text>
-                </TouchableOpacity>
+                        <View style={stylesModalSalvar.modalBackground}>
+                            <View style={stylesModalSalvar.modalContainer}>
+                                <Text style={stylesModalSalvar.title}>Seguir para round {round + 2}?</Text>
+                                <TouchableOpacity
+                                    style={stylesModalSalvar.BtnContainer}
+                                    onPress={salvarRound}
+                                >
+                                    <Text style={stylesModalSalvar.BtnText}>Sim</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[stylesModalSalvar.BtnContainer,]}
+                                    onPress={closeModalSalvarRound}
+                                >
 
+                                    <Text style={stylesModalSalvar.BtnText}>Não</Text>
 
-            </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+
+                </>
+
+            )}
 
         </View>
     );
@@ -1312,33 +1338,57 @@ const stylesModalEspecial = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#190a29', // Fundo semitransparente para o modal
-
+        paddingTop: 39,
+        paddingRight: 25,
+        paddingBottom: 40,
+        paddingLeft: 25
     },
     modalContent: {
+        flex: 1,
         width: '100%', // Modal ocupa toda a largura da tela
         height: '100%', // Modal ocupa toda a altura da tela
         backgroundColor: '#190a29',
         alignItems: 'center',
-        paddingTop: 35,
-        paddingRight: 26,
-        paddingBottom: 35,
-        paddingLeft: 26
     },
-    BtnContainer: {
-        // Garante que o gradiente não ultrapasse as bordas arredondadas
-        width: '100%',
-        height: 50,
+
+    back: {
+        width: 30,
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    img: {
+        width: "100%",
+        height: 31,
+    },
+    helpContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        width: 30,
+
+
+    },
+    help: {
+        fontSize: 33,
+        textAlign: 'center',
+        color: '#ffffff',
+        transform: [{ scaleY: 0.7 }],
+    },
+    btnZerar: {
+        width: 150,
+        borderColor: '#ffffff',
+        borderWidth: 2,
+        height: 45,
         justifyContent: 'center',
         alignItems: 'center',
         display: 'inline-flex',
         paddingRight: 30,
         paddingLeft: 30,
         overflow: 'hidden',
-        marginTop: 10,
-
-        backgroundColor: '#704BFF',
-        flexDirection: "row", // Coloca a imagem e o TextInput lado a lado
         borderRadius: 6,
+        marginRight: 60,
+        marginLeft: 60,
     },
     BtnText: {
         color: '#ffffff',
@@ -1351,35 +1401,19 @@ const stylesModalEspecial = StyleSheet.create({
     },
     header: {
         width: '100%',
-        height: 40,
+        height: 47,
         flexDirection: 'row',
-        justifyContent: 'space-around',
         alignItems: 'center',
-        marginBottom: 40,
-    },
-    modalEspecialOverlay: {
-        flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#190a29', // Fundo semitransparente
+        marginBottom: 36,
     },
-    modalEspecialContainer: {
-        width: '86%',
-        backgroundColor: '#190a29',
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    modalEspecialTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
+
     modalEspecialMessage: {
         fontSize: 14,
         marginBottom: 20,
     },
     BtnsEspecialContainer: {
-        width: '100%',
+        width: '90%',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -1456,6 +1490,7 @@ const stylesModalEspecial = StyleSheet.create({
         height: '100%',
         width: 154
     },
+
 })
 
 const stylesModalBatalha = StyleSheet.create({
@@ -1463,49 +1498,45 @@ const stylesModalBatalha = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#190a29', // Fundo semitransparente para o modal
+        backgroundColor: '#190a29',
         paddingTop: 35,
-        paddingRight: 20,
-        paddingBottom: 35,
-        paddingLeft: 20
+        paddingRight: 15,
+        paddingBottom: 21,
+        paddingLeft: 15
     },
     modalContent: {
-        width: '100%', // Modal ocupa toda a largura da tela
-        height: '100%', // Modal ocupa toda a altura da tela
+        flex: 1,
+        width: '100%',
+        height: '100%',
         backgroundColor: '#190a29',
         alignItems: 'center',
-
     },
     header: {
         width: '100%',
-        height: 40,
+        height: 47,
         flexDirection: 'row',
-        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 40
+        marginBottom: 36,
     },
     back: {
         width: 30,
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-
     },
     img: {
         width: "100%",
-        height: 32,
+        height: 31,
     },
     helpContainer: {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
         width: 30,
-        marginBottom: 13
     },
     help: {
         fontSize: 33,
         textAlign: 'center',
-
         color: '#ffffff',
         transform: [{ scaleY: 0.7 }],
     },
@@ -1535,12 +1566,15 @@ const stylesModalBatalha = StyleSheet.create({
         paddingLeft: 30,
         overflow: 'hidden',
         borderRadius: 6,
-        marginRight: 50,
-        marginLeft: 50
+        marginRight: 60,
+        marginLeft: 60,
+
     },
     BtnText: {
         color: '#ffffff',
         fontSize: 16,
+        width: '100%',
+        textAlign: 'center'
     },
     main: {
         width: '100%',
@@ -1753,6 +1787,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#190a29',
 
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#190a29',
+        height: '90%',
+        marginBottom: '10%'
+    },
     main: {
         paddingTop: 55,
         paddingRight: 43,
@@ -1914,4 +1956,3 @@ const styles = StyleSheet.create({
         height: '90%' // Mesmo height do main
     },
 });
-
