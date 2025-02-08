@@ -436,6 +436,7 @@ const styles = StyleSheet.create({
   modalContent: {
     alignItems: 'center',
     backgroundColor: '#190a29',
+
   },
   modalText: {
     color: '#ffffff',
@@ -457,7 +458,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 20,
     fontFamily: 'Ringstun',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   imageContainer: {
     width: 100,
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
+    gap: 5,
   },
   criterioText: {
     color: '#ffffff',
@@ -506,12 +507,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 18,
     fontFamily: 'Ringstun',
-    marginBottom: 10,
+    marginBottom: 5,
     width: '20%',
     textAlign: 'center'
   },
   progressBarBackground: {
-    width: '60%',
+    width: '70%',
     height: 12,
     backgroundColor: '#D8B3FF',
     borderRadius: 6,
@@ -526,12 +527,13 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ffffff',
     marginVertical: 7,
+    marginBottom: 20
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
+    marginTop: 30,
 
   },
   button: {

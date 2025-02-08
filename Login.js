@@ -139,10 +139,7 @@ export default function Login() {
 
 
                 // Atualizando o campo específico (por exemplo, "nome" ou "senha")
-                await update(userRef, {
-                    senha: password, // Substitui o valor da senha
-                });
-
+                
 
 
                 navigation.navigate("Home");

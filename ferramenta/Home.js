@@ -62,13 +62,15 @@ export default function Home() {
     navigation.navigate('Batalha');
 
   }
-
-  const handleAddBatalhaButton = () => {
-    setIsLoadingAdd(true);
+  const handleAddBatalhaButton = async () => {
     setActiveButton('Adicionar Batalha');
-    setIsLoadingAdd(false);
+    setIsLoadingAdd(true)
+    await new Promise((resolve) => setTimeout(resolve, 300));
     navigation.navigate('Batalha');
+
   }
+ 
+  
 
   const deleteData = async (id) => {
     try {
@@ -115,6 +117,7 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', () => {
       setIsLoadingScreen(false);
+      setIsLoadingAdd(false)
     });
 
     return unsubscribe;
@@ -159,7 +162,7 @@ export default function Home() {
               <View style={styles.parte2}>
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={navigateBatalha}
+                  onPress={handleAddBatalhaButton}
                   disabled={isLoadingAdd}
                 >
                   <LinearGradient

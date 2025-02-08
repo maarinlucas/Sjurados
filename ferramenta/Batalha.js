@@ -13,6 +13,7 @@ import UUID from 'react-native-uuid';
 
 export function Batalha({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoading2, setIsLoading2] = useState(true);
 
     const [isFocused, setIsFocused] = useState(false);
     const [activeButton, setActiveButton] = useState('Adicionar Batalha');
@@ -27,13 +28,19 @@ export function Batalha({ navigation }) {
 
     const [selectedRound, setSelectedRound] = useState("Sem Limite");
 
+ useEffect(() => {
+    setIsLoading2(false)
+  }, []);
+  
 
-    const openAlertConfirmar = () => {
+    const openAlertConfirmar = async () => {
         if (mc1 == '' || mc2 == '') {
             Alert.alert('Erro', 'Você precisa preencher todos os campos.', [
                 { text: 'OK', style: 'cancel' },
             ]);
         } else {
+            setIsLoading2(true)
+            await new Promise((resolve) => setTimeout(resolve, 300));
             navigation.navigate("Pontuacao", { mc1, mc2, selectedRound });
 
         }
@@ -140,9 +147,9 @@ export function Batalha({ navigation }) {
                         <TouchableOpacity
                             style={styles.BtnContainer}
                             onPress={openAlertConfirmar}
-                            disabled={isLoading} // Desativa o botão enquanto carrega
+                            disabled={isLoading2} // Desativa o botão enquanto carrega
                         >
-                            {isLoading ? (
+                            {isLoading2 ? (
                                 <ActivityIndicator size="small" color="#FFF" />
                             ) : (
                                 <>
@@ -268,6 +275,7 @@ export function Pontuacao({ route, navigation }) {
     const [ajuda, setAjuda] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoading2, setIsLoading2] = useState(true);
+  
 
 
 
@@ -282,7 +290,7 @@ export function Pontuacao({ route, navigation }) {
     const handleCloseModalAjuda = () => setAjuda(false);
 
 
-  
+
 
     useEffect(() => {
         setIsLoading2(false)
@@ -484,7 +492,7 @@ export function Pontuacao({ route, navigation }) {
         };
 
         const updatedData = [...parsedData, newBatalha];
-       
+
 
         await AsyncStorage.setItem('batalhas', JSON.stringify(updatedData));
         setBatalha(updatedData);
@@ -582,7 +590,7 @@ export function Pontuacao({ route, navigation }) {
 
 
     const openAlertZerarEspeciais = () => {
-        Alert.alert('Zerar', 'Deseja zerar os pontos?', [
+        Alert.alert('Zerar?', 'Deseja zerar os pontos?', [
             { text: 'Cancelar', style: 'cancel' },
             { text: 'Zerar', onPress: () => { zerarPontosEspeciais() } }
         ]);
@@ -622,12 +630,18 @@ export function Pontuacao({ route, navigation }) {
         setPontoTotal2(pontoTotal2 - ponto2)
     }
     const corrigir1 = () => {
-        setPonto1(ponto1 - 0.25)
-        setPontoTotal1(pontoTotal1 - 0.25)
+        if (ponto1 > 0) {
+            setPonto1(ponto1 - 0.25)
+            setPontoTotal1(pontoTotal1 - 0.25)
+        }
+
     }
     const corrigir2 = () => {
-        setPonto2(ponto2 - 0.25)
-        setPontoTotal2(pontoTotal2 - 0.25)
+        if (ponto2 > 0) {
+            setPonto2(ponto2 - 0.25)
+            setPontoTotal2(pontoTotal2 - 0.25)
+        }
+
     }
 
     const back = () => {
@@ -662,24 +676,19 @@ export function Pontuacao({ route, navigation }) {
 
 
     const openAlertZerarPontos = () => {
-        Alert.alert('Zerar', 'Zerar os pontos?', [
+        Alert.alert('Zerar?', 'A o executar esta ação os pontos da batalha serão zerados.', [
             { text: 'Não', style: 'cancel' },
             { text: 'Sim', onPress: () => { zerarPontos() } }
         ]);
     }
 
 
-    const openAlertBack = () => {
-        Alert.alert('Voltar', 'Desafazer as alterações e voltar para a tela anterior?', [
-            { text: 'Não', style: 'cancel' },
-            { text: 'Sim', onPress: () => { back() } }
-        ]);
-    }
+ 
     const addPonto1 = (p) => {
         const novaPontuacao = ponto1 + p;
         const novaPontuacaoTotal = pontoTotal1 + p;
 
-        if (novaPontuacao <= 100) {
+        if (novaPontuacao <= 999) {
             setPonto1(novaPontuacao);
             setPontoTotal1(novaPontuacaoTotal);
         }
@@ -687,7 +696,7 @@ export function Pontuacao({ route, navigation }) {
     const addPonto2 = (p) => {
         const novaPontuacao = ponto2 + p;
         const novaPontuacaoTotal = pontoTotal2 + p;
-        if (novaPontuacao <= 100) {
+        if (novaPontuacao <= 999) {
             setPonto2(novaPontuacao);
             setPontoTotal2(novaPontuacaoTotal);
         }
@@ -695,20 +704,20 @@ export function Pontuacao({ route, navigation }) {
 
 
     return (
-        <View style={stylesModalBatalha.modalContainer}>
+        <View style={stylesModalBatalha.container}>
 
             {isLoading2 ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#ffffff" />
                 </View>
-                
+
             ) : (
                 <>
                     <View style={stylesModalBatalha.modalContainer}>
                         <View style={stylesModalBatalha.modalContent}>
 
                             <View style={stylesModalBatalha.header}>
-                                <TouchableOpacity style={stylesModalBatalha.back} onPress={openAlertBack}>
+                                <TouchableOpacity style={stylesModalBatalha.back} onPress={back}>
                                     <Image
                                         source={require("../assets/imagens/back.png")} // Substitua pelo caminho da sua imagem
                                         style={stylesModalBatalha.img}
@@ -996,7 +1005,7 @@ export function Pontuacao({ route, navigation }) {
                         </View>
                     </View>
                     {/*Modal Especial */}
-                    <Modal 
+                    <Modal
                         visible={botoesEspeciais}
                         animationType="fade"
                     >
@@ -1337,11 +1346,11 @@ const stylesModalEspecial = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#190a29', // Fundo semitransparente para o modal
-        paddingTop: 39,
-        paddingRight: 25,
-        paddingBottom: 40,
-        paddingLeft: 25
+        backgroundColor: '#190a29',
+        paddingTop: 35,
+        paddingRight: 15,
+        paddingBottom: 21,
+        paddingLeft: 15
     },
     modalContent: {
         flex: 1,
@@ -1418,8 +1427,8 @@ const stylesModalEspecial = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         height: 333,
-        marginTop: 75,
-        marginBottom: 10,
+        marginTop: 95,
+        marginBottom: 20,
     },
     BtnContainer: {
         width: '90%',
@@ -1480,7 +1489,7 @@ const stylesModalEspecial = StyleSheet.create({
     nomes: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-around',
         alignItems: 'center'
     },
     nome: {
@@ -1494,6 +1503,12 @@ const stylesModalEspecial = StyleSheet.create({
 })
 
 const stylesModalBatalha = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#190a29',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -1583,7 +1598,7 @@ const stylesModalBatalha = StyleSheet.create({
     nomes: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-around',
         alignItems: 'center'
     },
     nome: {
@@ -1602,7 +1617,7 @@ const stylesModalBatalha = StyleSheet.create({
     pontos: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
         height: '100%',
         marginVertical: 5,
@@ -1620,7 +1635,7 @@ const stylesModalBatalha = StyleSheet.create({
     },
     separador: {
         color: '#ffffff',
-        fontSize: 36,
+        fontSize: 35,
         textAlign: 'center',
         width: '100%',
         height: '100%',
@@ -1635,7 +1650,7 @@ const stylesModalBatalha = StyleSheet.create({
     btnsPonto: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         height: 372,
         marginTop: 100,
         marginBottom: 25
@@ -1785,6 +1800,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#190a29',
+
 
     },
     loadingContainer: {
