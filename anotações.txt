@@ -38,7 +38,6 @@ npx eas-cli update --branch production --message "Correção de bugs e melhorias
 
 
 
-
 git init
 git add .
 git commit -m "first commit"
