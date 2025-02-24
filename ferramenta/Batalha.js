@@ -12,7 +12,7 @@ import UUID from 'react-native-uuid';
 
 
 export function Batalha({ navigation }) {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isLoading2, setIsLoading2] = useState(true);
 
     const [isFocused, setIsFocused] = useState(false);
@@ -28,10 +28,11 @@ export function Batalha({ navigation }) {
 
     const [selectedRound, setSelectedRound] = useState("Sem Limite");
 
- useEffect(() => {
-    setIsLoading2(false)
-  }, []);
-  
+    useEffect(() => {
+        setIsLoading(false)
+        setIsLoading2(false)
+    }, []);
+
 
     const openAlertConfirmar = async () => {
         if (mc1 == '' || mc2 == '') {
@@ -275,7 +276,7 @@ export function Pontuacao({ route, navigation }) {
     const [ajuda, setAjuda] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoading2, setIsLoading2] = useState(true);
-  
+
 
 
 
@@ -498,11 +499,6 @@ export function Pontuacao({ route, navigation }) {
         setBatalha(updatedData);
 
         // Reseta todos os estados
-
-
-
-
-        // Reseta todos os estados
         setIsLoading2(true);
         setModalSalvarBatalha(false)
         setModalSalvarRound(false)
@@ -528,7 +524,7 @@ export function Pontuacao({ route, navigation }) {
         setRound(0);
         setMc1RoundsVencidos(0);
         setMc2RoundsVencidos(0);
-        navigation.navigate('Batalha')
+        navigation.navigate('Home')
 
     }
 
@@ -666,12 +662,6 @@ export function Pontuacao({ route, navigation }) {
     }
     const back2 = () => {
         setbotoesEspeciais(false)
-        setPalco1(0)
-        setTecnica1(0)
-        setFlow1(0)
-        setPalco2(0)
-        setTecnica2(0)
-        setFlow2(0)
     }
 
 
@@ -683,7 +673,7 @@ export function Pontuacao({ route, navigation }) {
     }
 
 
- 
+
     const addPonto1 = (p) => {
         const novaPontuacao = ponto1 + p;
         const novaPontuacaoTotal = pontoTotal1 + p;
@@ -1244,15 +1234,15 @@ export function Pontuacao({ route, navigation }) {
                                     <Text style={stylesModalAjuda.item}>1. Paronomásia</Text>
                                     <Text style={stylesModalAjuda.item}>2. Aliteração</Text>
                                     <Text style={stylesModalAjuda.item}>3. Calambur</Text>
-                                    <Text style={stylesModalAjuda.item}>4. Wordplay</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Trocadilho</Text>
                                     <Text style={stylesModalAjuda.item}>5. Anadiplose</Text>
-                                    <Text style={stylesModalAjuda.item}>6. Multissilábicas One Two</Text>
-                                    <Text style={stylesModalAjuda.item}>7. Esdrújulas</Text>
+                                    <Text style={stylesModalAjuda.item}>6. Multissilábicas Um Dois</Text>
+                                    <Text style={stylesModalAjuda.item}>7. Esdrúxulas</Text>
                                     <Text style={stylesModalAjuda.item}>8. Univocalismo</Text>
                                     <Text style={stylesModalAjuda.item}>9. Derivação</Text>
-                                    <Text style={stylesModalAjuda.item}>10. Antanaclase</Text>
+                                    <Text style={stylesModalAjuda.item}>10. Antanáclase</Text>
                                     <Text style={stylesModalAjuda.item}>11. Retruécano</Text>
-                                    <Text style={stylesModalAjuda.item}>12. Ánafora</Text>
+                                    <Text style={stylesModalAjuda.item}>12. Anáfora</Text>
                                     <Text style={stylesModalAjuda.item}>13. Antítese</Text>
                                     <Text style={stylesModalAjuda.item}>14. Comparação</Text>
                                     <Text style={stylesModalAjuda.item}>15. Hipérbole</Text>
@@ -1261,6 +1251,33 @@ export function Pontuacao({ route, navigation }) {
                                     <Text style={stylesModalAjuda.item}>18. Esquemas</Text>
                                     <Text style={stylesModalAjuda.item}>19. Rimas perfeitas (coerência com fatality)</Text>
                                     <Text style={stylesModalAjuda.item}>20. Métricas</Text>
+
+                                    <Text style={stylesModalAjuda.title}>PUNCHILINE</Text>
+                                    <Text style={stylesModalAjuda.item}>1. Entrega (engraçada,finalização,gritando,normal)</Text>
+                                    <Text style={stylesModalAjuda.item}>2. Criatividade</Text>
+                                    <Text style={stylesModalAjuda.item}>3. Fatality</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Sequência</Text>
+                                    <Text style={stylesModalAjuda.item}>5. Jogar o jogo</Text>
+                                    <Text style={stylesModalAjuda.item}>6. Referência</Text>
+
+                                    <Text style={stylesModalAjuda.title}>ESTILOS</Text>
+                                    <Text style={stylesModalAjuda.item}>1. Ideologia</Text>
+                                    <Text style={stylesModalAjuda.item}>2. Gastação</Text>
+                                    <Text style={stylesModalAjuda.item}>3. Pederastia</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Agressividade</Text>
+                                    <Text style={stylesModalAjuda.item}>5. Punchline</Text>
+                                    <Text style={stylesModalAjuda.item}>6. Construção/métrico/coerente</Text>
+                                    <Text style={stylesModalAjuda.item}>7. Deboche</Text>
+                                    <Text style={stylesModalAjuda.item}>8. Rimas pessoais/jogar sujo</Text>
+                                    <Text style={stylesModalAjuda.item}>9. Maceiro/clichê</Text>
+                                    <Text style={stylesModalAjuda.item}>10. Calmo</Text>
+                                    <Text style={stylesModalAjuda.item}>11. Puro free (sem pensar na punch)</Text>
+
+                                    <Text style={stylesModalAjuda.title}>CONHECIMENTO</Text>
+                                    <Text style={stylesModalAjuda.item}>1. História</Text>
+                                    <Text style={stylesModalAjuda.item}>2. Entretenimento</Text>
+                                    <Text style={stylesModalAjuda.item}>3. Cena (rap, trap, batalhas etc.)</Text>
+                                    <Text style={stylesModalAjuda.item}>4. Vocabulário</Text>
                                 </ScrollView>
 
                                 <TouchableOpacity
